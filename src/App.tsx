@@ -633,6 +633,17 @@ export default function App() {
     });
   }, [cfg.batteryFeedCost]);
 
+  const handleLongPress = useCallback(() => {
+    const bonus = gameStateRef.current.multiplier * 5;
+    setGameState((prev) => ({
+      ...prev,
+      energy: prev.energy + bonus,
+      peakEnergy: Math.max(prev.peakEnergy ?? 0, prev.energy + bonus),
+      totalEnergyEarned: prev.totalEnergyEarned + bonus,
+    }));
+    setCurrentEnergy((prev) => prev + bonus);
+  }, []);
+
   const handleDailyClaim = useCallback(() => {
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
@@ -1029,6 +1040,7 @@ export default function App() {
               onLangSwitch={handleLangSwitch}
               onReset={handleReset}
               isSyncing={isSyncing}
+              onLongPress={handleLongPress}
               t={t}
             />
           </motion.div>

@@ -1,7 +1,10 @@
+export type RobotMood = 'normal' | 'happy' | 'wink' | 'sleepy' | 'charging';
+
 interface RobotMascotProps {
   size?: number;
   className?: string;
   tier?: 0 | 1 | 2 | 3 | 4;
+  mood?: RobotMood;
 }
 
 // tier 0 = default
@@ -9,8 +12,26 @@ interface RobotMascotProps {
 // tier 2 = 100k kW — golden panels + halo
 // tier 3 = 1M kW   — rainbow aura + crown
 // tier 4 = 10M kW  — platinum ultimate: solar wings + double crown + star burst
-export default function RobotMascot({ size = 180, className = '', tier = 0 }: RobotMascotProps) {
+export default function RobotMascot({ size = 180, className = '', tier = 0, mood = 'normal' }: RobotMascotProps) {
   const filterId = `robot-glow-${tier}`;
+
+  const eyeOuter =
+    mood === 'charging' ? '#FFD700'
+    : tier >= 4 ? '#A855F7'
+    : tier >= 3 ? '#FF4081'
+    : tier >= 2 ? '#FF9800'
+    : tier >= 1 ? '#00BCD4'
+    : '#1565C0';
+
+  const eyeInner =
+    mood === 'charging' ? '#FF6F00'
+    : tier >= 4 ? '#7B1FA2'
+    : tier >= 3 ? '#C2185B'
+    : tier >= 2 ? '#E65100'
+    : tier >= 1 ? '#006064'
+    : '#0D47A1';
+
+  const smileColor = tier >= 2 ? '#E65100' : '#0288D1';
 
   return (
     <svg
@@ -229,37 +250,131 @@ export default function RobotMascot({ size = 180, className = '', tier = 0 }: Ro
 
         {/* Head */}
         <rect x="58" y="63" width="84" height="70" rx="18"
-          fill={tier >= 4 ? '#FFFFFF' : tier >= 3 ? '#FFFDE7' : '#ECEFF1'}
+          fill={
+            mood === 'sleepy' ? '#D1D5DB'
+            : tier >= 4 ? '#FFFFFF'
+            : tier >= 3 ? '#FFFDE7'
+            : '#ECEFF1'
+          }
           stroke={tier >= 4 ? '#FFD700' : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth={tier >= 4 ? 3 : 2.5}/>
         <rect x="64" y="70" width="72" height="46" rx="12"
-          fill={tier >= 4 ? '#FF6B35' : tier >= 3 ? '#FF6B35' : tier >= 2 ? '#FF9800' : tier >= 1 ? '#00BCD4' : '#29B6F6'}
+          fill={
+            mood === 'charging' ? '#FF8F00'
+            : mood === 'sleepy' ? '#9CA3AF'
+            : tier >= 4 ? '#FF6B35'
+            : tier >= 3 ? '#FF6B35'
+            : tier >= 2 ? '#FF9800'
+            : tier >= 1 ? '#00BCD4'
+            : '#29B6F6'
+          }
           stroke={tier >= 3 ? '#E65100' : tier >= 2 ? '#E65100' : tier >= 1 ? '#0097A7' : '#0288D1'}
           strokeWidth="2"/>
         <rect x="68" y="74" width="64" height="38" rx="9"
-          fill={tier >= 4 ? '#FF8A50' : tier >= 3 ? '#FF8A50' : tier >= 2 ? '#FFB74D' : tier >= 1 ? '#26C6DA' : '#4FC3F7'}/>
+          fill={
+            mood === 'charging' ? '#FFA000'
+            : mood === 'sleepy' ? '#9CA3AF'
+            : tier >= 4 ? '#FF8A50'
+            : tier >= 3 ? '#FF8A50'
+            : tier >= 2 ? '#FFB74D'
+            : tier >= 1 ? '#26C6DA'
+            : '#4FC3F7'
+          }/>
         <rect x="70" y="76" width="20" height="6" rx="3" fill="rgba(255,255,255,0.5)"/>
 
-        {/* Eyes */}
-        <circle cx="84" cy="94" r="11" fill="white"/>
-        <circle cx="116" cy="94" r="11" fill="white"/>
-        <circle cx="84" cy="94" r="7"
-          fill={tier >= 4 ? '#A855F7' : tier >= 3 ? '#FF4081' : tier >= 2 ? '#FF9800' : tier >= 1 ? '#00BCD4' : '#1565C0'}/>
-        <circle cx="116" cy="94" r="7"
-          fill={tier >= 4 ? '#A855F7' : tier >= 3 ? '#FF4081' : tier >= 2 ? '#FF9800' : tier >= 1 ? '#00BCD4' : '#1565C0'}/>
-        <circle cx="84" cy="94" r="4"
-          fill={tier >= 4 ? '#7B1FA2' : tier >= 3 ? '#C2185B' : tier >= 2 ? '#E65100' : tier >= 1 ? '#006064' : '#0D47A1'}/>
-        <circle cx="116" cy="94" r="4"
-          fill={tier >= 4 ? '#7B1FA2' : tier >= 3 ? '#C2185B' : tier >= 2 ? '#E65100' : tier >= 1 ? '#006064' : '#0D47A1'}/>
-        <circle cx="87" cy="91" r="2" fill="white"/>
-        <circle cx="119" cy="91" r="2" fill="white"/>
-        <path d="M 82 108 Q 100 120 118 108"
-          stroke={tier >= 2 ? '#E65100' : '#0288D1'} strokeWidth="3" fill="none" strokeLinecap="round"/>
+        {/* ── EYES (mood-dependent) ── */}
+        {mood === 'sleepy' ? (
+          <>
+            {/* Sleepy: narrow ellipse eyes */}
+            <ellipse cx="84" cy="95" rx="11" ry="5" fill="white"/>
+            <ellipse cx="84" cy="96" rx="7" ry="3" fill="#64748B" opacity="0.8"/>
+            <ellipse cx="116" cy="95" rx="11" ry="5" fill="white"/>
+            <ellipse cx="116" cy="96" rx="7" ry="3" fill="#64748B" opacity="0.8"/>
+            {/* Sleepy Zzz above head */}
+            <text x="124" y="62" fontSize="9" fill="#94A3B8" fontWeight="bold" opacity="0.7">z</text>
+            <text x="132" y="52" fontSize="12" fill="#94A3B8" fontWeight="bold" opacity="0.6">z</text>
+            <text x="142" y="38" fontSize="15" fill="#94A3B8" fontWeight="bold" opacity="0.5">Z</text>
+          </>
+        ) : mood === 'happy' ? (
+          <>
+            {/* Happy: upward arc squint eyes + blush */}
+            <circle cx="84" cy="94" r="11" fill="white"/>
+            <path d="M 74 97 Q 84 86 94 97" stroke={eyeOuter} strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+            <circle cx="116" cy="94" r="11" fill="white"/>
+            <path d="M 106 97 Q 116 86 126 97" stroke={eyeOuter} strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+            {/* Blush */}
+            <ellipse cx="73" cy="106" rx="6" ry="4" fill="#FB7185" opacity="0.4"/>
+            <ellipse cx="127" cy="106" rx="6" ry="4" fill="#FB7185" opacity="0.4"/>
+            {/* Stars */}
+            <text x="50" y="82" fontSize="11" fill="#FFD700" opacity="0.9">✦</text>
+            <text x="143" y="78" fontSize="13" fill="#FFD700" opacity="0.9">✦</text>
+            <text x="136" y="62" fontSize="9" fill="#FB923C" opacity="0.8">★</text>
+          </>
+        ) : mood === 'wink' ? (
+          <>
+            {/* Wink: left eye normal, right eye closed arc */}
+            <circle cx="84" cy="94" r="11" fill="white"/>
+            <circle cx="84" cy="94" r="7" fill={eyeOuter}/>
+            <circle cx="84" cy="94" r="4" fill={eyeInner}/>
+            <circle cx="87" cy="91" r="2" fill="white"/>
+            <circle cx="116" cy="94" r="11" fill="white"/>
+            {/* Closed eye — curved line */}
+            <path d="M 107 92 Q 116 102 125 92" stroke={eyeOuter} strokeWidth="3" fill="none" strokeLinecap="round"/>
+            {/* Sparkle near winking eye */}
+            <text x="128" y="84" fontSize="12" fill="#FFD700" opacity="0.9">✦</text>
+          </>
+        ) : mood === 'charging' ? (
+          <>
+            {/* Charging: electric yellow glowing eyes */}
+            <circle cx="84" cy="94" r="11" fill="white"/>
+            <circle cx="116" cy="94" r="11" fill="white"/>
+            <circle cx="84" cy="94" r="8" fill="#FFD700"/>
+            <circle cx="116" cy="94" r="8" fill="#FFD700"/>
+            <circle cx="84" cy="94" r="4.5" fill="#FF6F00"/>
+            <circle cx="116" cy="94" r="4.5" fill="#FF6F00"/>
+            <circle cx="87" cy="91" r="2" fill="white" opacity="0.9"/>
+            <circle cx="119" cy="91" r="2" fill="white" opacity="0.9"/>
+            {/* Outer glow rings */}
+            <circle cx="84" cy="94" r="13" fill="none" stroke="#FFD700" strokeWidth="2.5" opacity="0.75"/>
+            <circle cx="116" cy="94" r="13" fill="none" stroke="#FFD700" strokeWidth="2.5" opacity="0.75"/>
+            {/* Lightning bolts */}
+            <text x="48" y="80" fontSize="14">⚡</text>
+            <text x="136" y="80" fontSize="14">⚡</text>
+          </>
+        ) : (
+          <>
+            {/* Normal eyes */}
+            <circle cx="84" cy="94" r="11" fill="white"/>
+            <circle cx="116" cy="94" r="11" fill="white"/>
+            <circle cx="84" cy="94" r="7" fill={eyeOuter}/>
+            <circle cx="116" cy="94" r="7" fill={eyeOuter}/>
+            <circle cx="84" cy="94" r="4" fill={eyeInner}/>
+            <circle cx="116" cy="94" r="4" fill={eyeInner}/>
+            <circle cx="87" cy="91" r="2" fill="white"/>
+            <circle cx="119" cy="91" r="2" fill="white"/>
+          </>
+        )}
+
+        {/* ── MOUTH (mood-dependent) ── */}
+        {mood === 'sleepy' ? (
+          <path d="M 88 112 Q 100 110 112 112"
+            stroke="#94A3B8" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        ) : mood === 'happy' ? (
+          <path d="M 76 107 Q 100 126 124 107"
+            stroke={smileColor} strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+        ) : mood === 'charging' ? (
+          <ellipse cx="100" cy="112" rx="7" ry="5"
+            fill="none" stroke={smileColor} strokeWidth="2.5"/>
+        ) : (
+          <path d="M 82 108 Q 100 120 118 108"
+            stroke={smileColor} strokeWidth="3" fill="none" strokeLinecap="round"/>
+        )}
 
         {/* Antenna */}
         <rect x="96" y="48" width="8" height="18" rx="3" fill={tier >= 2 ? '#FFD700' : '#90A4AE'}/>
         <circle cx="100" cy="45" r="7"
-          fill={tier >= 1 ? '#00E5FF' : '#FFD700'} stroke={tier >= 1 ? '#006064' : '#F9A825'} strokeWidth="2"/>
-        <circle cx="100" cy="45" r="3" fill={tier >= 1 ? 'white' : '#FFF176'}/>
+          fill={mood === 'charging' ? '#FFD700' : tier >= 1 ? '#00E5FF' : '#FFD700'}
+          stroke={mood === 'charging' ? '#FF6F00' : tier >= 1 ? '#006064' : '#F9A825'} strokeWidth="2"/>
+        <circle cx="100" cy="45" r="3" fill={mood === 'charging' ? '#FF6F00' : tier >= 1 ? 'white' : '#FFF176'}/>
 
         {tier === 3 && (
           <g>
@@ -303,6 +418,12 @@ export default function RobotMascot({ size = 180, className = '', tier = 0 }: Ro
             <circle cx="36" cy="140" r="2" fill="#A855F7" opacity="0.8"/>
             <circle cx="164" cy="140" r="2" fill="#A855F7" opacity="0.8"/>
           </>
+        )}
+
+        {/* Sleepy overlay — dim the whole body slightly */}
+        {mood === 'sleepy' && (
+          <rect x="58" y="63" width="84" height="135" rx="12"
+            fill="rgba(100,116,139,0.18)" pointerEvents="none"/>
         )}
       </g>
     </svg>
