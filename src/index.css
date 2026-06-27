@@ -27,15 +27,6 @@
 }
 
 @layer utilities {
-  .game-bg {
-    background-image: url('/images/photo_2026-06-28_01-51-28.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    width: 100vw;
-    height: 100vh;
-  }
-
   .font-pixel {
     font-family: 'Press Start 2P', monospace;
   }
