@@ -215,20 +215,20 @@ export default function ClickerTab({
   }, [stopCharge]);
 
   return (
-    <div className="flex flex-col items-center flex-1 relative overflow-hidden">
+    <div className="flex flex-col items-center flex-1 relative overflow-hidden" style={{ isolation: 'isolate' }}>
 
       {/* ── Scenic landscape background — actual artwork ─────────────── */}
       <img
         src="/images/photo_2026-06-28_01-51-28 copy.jpg"
         alt=""
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        style={{ objectFit: 'cover', objectPosition: 'center top' }}
+        className="absolute inset-0 w-full h-full pointer-events-none select-none"
+        style={{ objectFit: 'cover', objectPosition: 'center top', zIndex: 0 }}
       />
 
       {/* Subtle darkening at very bottom so the bottom UI stays readable */}
       <div className="absolute pointer-events-none"
-        style={{ bottom: 0, left: 0, right: 0, height: '28%',
-          background: 'linear-gradient(180deg, rgba(5,14,38,0) 0%, rgba(5,14,38,.75) 100%)' }} />
+        style={{ bottom: 0, left: 0, right: 0, height: '32%', zIndex: 1,
+          background: 'linear-gradient(180deg, rgba(5,14,38,0) 0%, rgba(5,14,38,.82) 100%)' }} />
 
       {/* ── SOLAR CONTROL MODULE ─────────────────────────────────────── */}
       <div className="mx-3 mt-3 w-[calc(100%-1.5rem)] relative z-10">
