@@ -41,6 +41,52 @@ interface Particle {
   value: number;
 }
 
+function SolarPanelGroup({ style }: { style?: React.CSSProperties }) {
+  return (
+    <div style={{ width: 130, height: 90, ...style }}>
+      {[0, 1, 2].map((col) => (
+        <div key={col} style={{ position: 'absolute', left: col * 44, top: col * 8, width: 40, height: 80 }}>
+          {[0, 1, 2].map((row) => (
+            <div key={row} style={{
+              position: 'absolute', top: row * 27, left: 0, width: 40, height: 24,
+              background: 'linear-gradient(135deg, #1a3a6b 0%, #2563b0 35%, #1e50a0 65%, #1a3a6b 100%)',
+              border: '1px solid rgba(56,189,248,.5)',
+              borderRadius: 3,
+              boxShadow: 'inset 0 0 6px rgba(56,189,248,.2)',
+            }}>
+              <div style={{ position: 'absolute', inset: 2, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1 }}>
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={i} style={{ background: 'rgba(56,189,248,.12)', borderRadius: 1 }} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div style={{ position: 'absolute', bottom: -8, left: '45%', width: 3, height: 10, background: '#888', borderRadius: 1 }} />
+          <div style={{ position: 'absolute', bottom: -12, left: '30%', width: '40%', height: 4, background: '#777', borderRadius: 1 }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SolarPanelMini({ style }: { style?: React.CSSProperties }) {
+  return (
+    <div style={{ width: 90, height: 64, ...style }}>
+      {[0, 1].map((col) => (
+        <div key={col} style={{ position: 'absolute', left: col * 46, top: col * 5, width: 38, height: 58 }}>
+          {[0, 1, 2].map((row) => (
+            <div key={row} style={{
+              position: 'absolute', top: row * 20, left: 0, width: 38, height: 18,
+              background: 'linear-gradient(135deg, #1a3a6b 0%, #2563b0 40%, #1a3a6b 100%)',
+              border: '1px solid rgba(56,189,248,.4)', borderRadius: 2,
+            }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function GearIcon({ spinning }: { spinning: boolean }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -64,10 +110,11 @@ export default function ClickerTab({
   const [wakeUpPending, setWakeUpPending] = useState(false);
   const [showChargeHint, setShowChargeHint] = useState(false);
 
+  const [tapAnim, setTapAnim] = useState<'idle' | 'bounce' | 'jump' | 'spin'>('idle');
+  const tapAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const particleId = useRef(0);
   const tapBtnRef = useRef<HTMLButtonElement>(null);
   const moodTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const chargeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const chargeCooldownRef = useRef(false);
   const isChargingRef = useRef(false);
@@ -115,6 +162,13 @@ export default function ClickerTab({
     moodTimerRef.current = setTimeout(() => setMood('normal'), ms);
   }, []);
 
+  const triggerTapAnim = useCallback(() => {
+    if (tapAnimTimerRef.current) clearTimeout(tapAnimTimerRef.current);
+    const anims: Array<'bounce' | 'jump' | 'spin'> = ['bounce', 'bounce', 'jump', 'bounce', 'spin', 'bounce', 'bounce', 'jump'];
+    setTapAnim(anims[Math.floor(Math.random() * anims.length)]);
+    tapAnimTimerRef.current = setTimeout(() => setTapAnim('idle'), 500);
+  }, []);
+
   const stopCharge = useCallback(() => {
     if (longPressTimerRef.current) { clearTimeout(longPressTimerRef.current); longPressTimerRef.current = null; }
     if (chargeIntervalRef.current) { clearInterval(chargeIntervalRef.current); chargeIntervalRef.current = null; }
@@ -145,6 +199,7 @@ export default function ClickerTab({
 
       haptic(10);
       onTap();
+      triggerTapAnim();
       setIsTapping(true);
       setTimeout(() => setIsTapping(false), 120);
 
@@ -161,7 +216,7 @@ export default function ClickerTab({
       setParticles((p) => [...p, { id, x: clientX, y: clientY, value: multiplier }]);
       setTimeout(() => setParticles((p) => p.filter((x) => x.id !== id)), 900);
     },
-    [onTap, multiplier, canTap, wakeUpPending, haptic, setMoodFor]
+    [onTap, multiplier, canTap, wakeUpPending, haptic, setMoodFor, triggerTapAnim]
   );
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -208,15 +263,93 @@ export default function ClickerTab({
   return (
     <div className="flex flex-col items-center flex-1 relative overflow-hidden">
 
-      {/* Ambient depth overlay */}
+      {/* ── Scenic landscape background ───────────────────────────────── */}
+      {/* Sky gradient */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 100% 70% at 50% 0%, rgba(56,189,248,.06) 0%, transparent 65%)' }} />
+        style={{ background: 'linear-gradient(180deg, #7ecef4 0%, #b8e4f9 28%, #d6eefc 50%, #c8e8a0 72%, #6db36d 100%)' }} />
 
-      {/* Star flares */}
-      <div className="absolute top-10 left-8 w-1 h-1 rounded-full bg-sky-300/60" />
-      <div className="absolute top-6 left-24 w-0.5 h-0.5 rounded-full bg-white/50" />
-      <div className="absolute top-20 right-12 w-1 h-1 rounded-full bg-sky-200/50" />
-      <div className="absolute top-8 right-28 w-0.5 h-0.5 rounded-full bg-white/40" />
+      {/* Sun glow — golden */}
+      <div className="absolute pointer-events-none"
+        style={{ top: '10%', right: '22%', width: 56, height: 56, borderRadius: '50%',
+          background: 'radial-gradient(circle, #ffe066 0%, #ffb300 50%, rgba(255,179,0,0) 100%)',
+          boxShadow: '0 0 28px 12px rgba(255,200,0,.55), 0 0 60px 24px rgba(255,160,0,.25)' }} />
+
+      {/* Sun glow — blue (smaller, offset) */}
+      <div className="absolute pointer-events-none"
+        style={{ top: '7%', right: '32%', width: 34, height: 34, borderRadius: '50%',
+          background: 'radial-gradient(circle, #a8d8ff 0%, #38bdf8 55%, rgba(56,189,248,0) 100%)',
+          boxShadow: '0 0 18px 8px rgba(56,189,248,.6), 0 0 36px 16px rgba(14,165,233,.25)' }} />
+
+      {/* Cloud 1 — large, left-centre */}
+      <div className="absolute pointer-events-none" style={{ top: '14%', left: '4%', width: 180, height: 72, opacity: 0.92 }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 20, width: 140, height: 40, background: 'rgba(255,255,255,.88)', borderRadius: 999, filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', bottom: 18, left: 30, width: 90, height: 44, background: 'rgba(255,255,255,.85)', borderRadius: 999, filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', bottom: 28, left: 55, width: 70, height: 40, background: 'rgba(255,255,255,.8)', borderRadius: 999, filter: 'blur(1px)' }} />
+      </div>
+
+      {/* Cloud 2 — mid-right */}
+      <div className="absolute pointer-events-none" style={{ top: '18%', right: '5%', width: 130, height: 55, opacity: 0.85 }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 10, width: 110, height: 32, background: 'rgba(255,255,255,.82)', borderRadius: 999, filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', bottom: 14, left: 18, width: 75, height: 36, background: 'rgba(255,255,255,.78)', borderRadius: 999, filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', bottom: 24, left: 36, width: 52, height: 32, background: 'rgba(255,255,255,.75)', borderRadius: 999, filter: 'blur(1px)' }} />
+      </div>
+
+      {/* Cloud 3 — top-right small */}
+      <div className="absolute pointer-events-none" style={{ top: '8%', right: '12%', width: 90, height: 38, opacity: 0.75 }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 8, width: 74, height: 24, background: 'rgba(255,255,255,.75)', borderRadius: 999, filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', bottom: 10, left: 14, width: 50, height: 28, background: 'rgba(255,255,255,.72)', borderRadius: 999, filter: 'blur(1px)' }} />
+      </div>
+
+      {/* Ocean/sea band */}
+      <div className="absolute pointer-events-none"
+        style={{ top: '48%', left: 0, right: 0, height: '16%',
+          background: 'linear-gradient(180deg, rgba(64,164,240,.55) 0%, rgba(30,120,200,.45) 100%)',
+          clipPath: 'ellipse(120% 100% at 50% 0%)' }} />
+
+      {/* Distant beach/coastline */}
+      <div className="absolute pointer-events-none"
+        style={{ top: '52%', left: 0, right: 0, height: '10%',
+          background: 'linear-gradient(180deg, rgba(230,200,120,.6) 0%, rgba(180,160,80,.3) 100%)',
+          clipPath: 'polygon(0% 60%, 15% 30%, 35% 50%, 55% 20%, 75% 45%, 90% 25%, 100% 40%, 100% 100%, 0% 100%)' }} />
+
+      {/* Green hills — back left */}
+      <div className="absolute pointer-events-none"
+        style={{ bottom: '30%', left: '-5%', width: '55%', height: '28%',
+          background: 'linear-gradient(180deg, #5fad5f 0%, #3d8c3d 100%)',
+          borderRadius: '50% 80% 0 0', opacity: 0.85 }} />
+
+      {/* Green hills — back right */}
+      <div className="absolute pointer-events-none"
+        style={{ bottom: '28%', right: '-8%', width: '50%', height: '25%',
+          background: 'linear-gradient(180deg, #6bbf6b 0%, #42924f 100%)',
+          borderRadius: '80% 50% 0 0', opacity: 0.8 }} />
+
+      {/* Solar panels — foreground left */}
+      <SolarPanelGroup style={{ position: 'absolute', bottom: '14%', left: '-2%', transform: 'perspective(200px) rotateX(20deg) rotateY(12deg) scale(0.85)', opacity: 0.9 }} />
+
+      {/* Solar panels — foreground right */}
+      <SolarPanelGroup style={{ position: 'absolute', bottom: '12%', right: '-4%', transform: 'perspective(200px) rotateX(20deg) rotateY(-12deg) scale(0.75)', opacity: 0.85 }} />
+
+      {/* Solar panels — mid background left */}
+      <SolarPanelMini style={{ position: 'absolute', bottom: '34%', left: '8%', transform: 'perspective(160px) rotateX(28deg) scale(0.55)', opacity: 0.6 }} />
+
+      {/* Solar panels — mid background right */}
+      <SolarPanelMini style={{ position: 'absolute', bottom: '32%', right: '10%', transform: 'perspective(160px) rotateX(28deg) scale(0.45)', opacity: 0.55 }} />
+
+      {/* Foreground ground strip */}
+      <div className="absolute pointer-events-none"
+        style={{ bottom: 0, left: 0, right: 0, height: '20%',
+          background: 'linear-gradient(180deg, #5ab55a 0%, #3a8c3a 55%, #2d6e2d 100%)' }} />
+
+      {/* Grass texture overlay */}
+      <div className="absolute pointer-events-none"
+        style={{ bottom: '14%', left: 0, right: 0, height: '8%',
+          background: 'linear-gradient(180deg, rgba(90,180,90,.0) 0%, rgba(60,140,60,.45) 100%)' }} />
+
+      {/* Atmospheric haze between panels and robot */}
+      <div className="absolute pointer-events-none"
+        style={{ top: 0, left: 0, right: 0, bottom: 0,
+          background: 'linear-gradient(180deg, rgba(255,255,255,.0) 0%, rgba(200,230,255,.08) 40%, rgba(160,220,140,.08) 70%, rgba(0,0,0,.15) 100%)' }} />
 
       {/* ── SOLAR CONTROL MODULE ─────────────────────────────────────── */}
       <div className="mx-3 mt-3 w-[calc(100%-1.5rem)] relative z-10">
@@ -414,20 +547,29 @@ export default function ClickerTab({
               onPointerLeave={handlePointerUp}
               onPointerCancel={handlePointerUp}
               animate={
-                mood === 'charging' ? { scale: [1, 1.04, 1], filter: ['drop-shadow(0 0 18px rgba(255,215,0,.6))', 'drop-shadow(0 0 32px rgba(255,215,0,.9))', 'drop-shadow(0 0 18px rgba(255,215,0,.6))'] }
+                mood === 'charging'
+                  ? { scale: [1, 1.04, 1], filter: ['drop-shadow(0 0 18px rgba(255,215,0,.6))', 'drop-shadow(0 0 32px rgba(255,215,0,.9))', 'drop-shadow(0 0 18px rgba(255,215,0,.6))'] }
                 : mood === 'sleepy' ? { opacity: 0.75, y: 3 }
                 : batteryDead ? { opacity: 0.4 }
                 : !canTap  ? { opacity: 0.6 }
+                : tapAnim === 'bounce'
+                  ? { scale: [1, 0.88, 1.08, 0.97, 1], y: [0, 6, -4, 2, 0] }
+                : tapAnim === 'jump'
+                  ? { y: [0, -30, 0, -10, 0], scale: [1, 1.05, 0.95, 1.02, 1], rotate: [0, -5, 5, -2, 0] }
+                : tapAnim === 'spin'
+                  ? { rotate: [0, 15, -15, 8, -8, 0], scale: [1, 1.1, 1] }
                 : isTapping ? { scale: 0.93, y: 6 }
-                : { scale: 1, y: 0, opacity: 1 }
+                : { scale: 1, y: 0, opacity: 1, rotate: 0 }
               }
               transition={
                 mood === 'charging'
                   ? { duration: 0.6, repeat: Infinity, ease: 'easeInOut' }
+                : (tapAnim === 'bounce' || tapAnim === 'jump' || tapAnim === 'spin')
+                  ? { duration: 0.45, ease: 'easeOut' }
                   : { type: 'spring', stiffness: 600, damping: 15 }
               }
               className={`robot-float select-none ${canTap || wakeUpPending ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-              style={{ filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 18px rgba(56,189,248,.35))' : undefined, touchAction: 'none' }}
+              style={{ filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 22px rgba(255,200,50,.45))' : undefined, touchAction: 'none' }}
             >
               <RobotMascot size={230} tier={upgradeTier} mood={mood} skinId={equippedSkinId} />
             </motion.div>
@@ -509,7 +651,8 @@ export default function ClickerTab({
       <AnimatePresence>
         {showChargeHint && !wakeUpPending && (
           <motion.p
-            className="font-pixel text-[7px] text-yellow-300/60 text-center px-4 relative z-10 -mt-1"
+            className="font-pixel text-[7px] text-yellow-300 text-center px-4 relative z-10 -mt-1"
+            style={{ textShadow: '0 1px 4px rgba(0,0,0,.7)' }}
             initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           >
             {lang === 'uk' ? '⚡ Затримай дотик для СУПЕРЗАРЯДУ' : '⚡ Hold to SUPER CHARGE'}
@@ -517,12 +660,16 @@ export default function ClickerTab({
         )}
       </AnimatePresence>
 
+      {/* ── Bottom UI backdrop + controls ─────────────────────────────── */}
+      <div className="w-full relative z-10"
+        style={{ background: 'linear-gradient(180deg, rgba(8,20,50,.0) 0%, rgba(8,20,50,.82) 18%, rgba(5,14,38,.96) 100%)', paddingTop: 12 }}>
+
       {/* ── Neon TAP ENERGY bar ───────────────────────────────────────── */}
-      <div className="w-full px-5 pb-2 relative z-10">
+      <div className="w-full px-5 pb-2">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.7)' }}>{t.tapEnergy}</span>
-          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.7)' }}>
-            {tapCapacity} <span style={{ color: 'rgba(56,189,248,.35)' }}>|</span> {TAP_CAPACITY_MAX}
+          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.85)' }}>{t.tapEnergy}</span>
+          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.85)' }}>
+            {tapCapacity} <span style={{ color: 'rgba(56,189,248,.45)' }}>|</span> {TAP_CAPACITY_MAX}
           </span>
         </div>
         <div className="tap-bar-track w-full h-4">
@@ -543,7 +690,7 @@ export default function ClickerTab({
       </div>
 
       {/* ── Tap button ────────────────────────────────────────────────── */}
-      <div className="w-full px-5 pb-5 relative z-10">
+      <div className="w-full px-5 pb-5">
         <motion.button
           ref={tapBtnRef}
           onClick={handleTap} onTouchStart={handleTap}
@@ -570,6 +717,8 @@ export default function ClickerTab({
           {isBlockedBySyncing ? 'SYNCING...' : canTap ? t.tapToGenerate : t.recharging}
         </motion.button>
       </div>
+
+      </div>{/* end bottom backdrop */}
 
       {/* Floating particles */}
       <AnimatePresence>
