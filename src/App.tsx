@@ -422,13 +422,23 @@ export default function App() {
       setCurrentPlayer(data);
 
       if (refCode) {
+        const bonusEnergy = (local.energy ?? 0) + 50000;
         setGameState((s) => ({
-          ...s, energy: s.energy + 50000,
-          peakEnergy: Math.max(s.peakEnergy, s.energy + 50000),
-          totalEnergyEarned: s.totalEnergyEarned + 50000,
+          ...s,
+          energy: bonusEnergy,
+          peakEnergy: Math.max(s.peakEnergy, bonusEnergy),
+          totalEnergyEarned: bonusEnergy,
         }));
-        setCurrentEnergy((prev) => prev + 50000);
+        setCurrentEnergy(bonusEnergy);
         setBonusClaimed(true);
+
+        // Persist immediately — debounced sync won't fire until initializedRef=true,
+        // so without this direct write the bonus is lost on the next reload.
+        await supabase.from('players').update({
+          energy: bonusEnergy,
+          total_energy_earned: bonusEnergy,
+        }).eq('id', data.id);
+
         const url = new URL(window.location.href);
         url.searchParams.delete('ref');
         url.searchParams.delete('start');
