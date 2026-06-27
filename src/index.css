@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #0d1f3c;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  #root {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@layer utilities {
+  .font-pixel {
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  .pixel-border {
+    border: 3px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  .pixel-btn {
+    border: 3px solid rgba(0, 0, 0, 0.25);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: transform 0.08s, box-shadow 0.08s;
+    image-rendering: pixelated;
+  }
+
+  .pixel-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  /* Deep space-blue radial gradient — lighter at centre, deep navy at edges */
+  .sky-gradient {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%);
+  }
+
+  /* Faint solar-panel grid overlay — applied as a pseudo or inline bg */
+  .solar-grid {
+    background-image:
+      linear-gradient(rgba(56,189,248,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.06) 1px, transparent 1px),
+      linear-gradient(rgba(56,189,248,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.025) 1px, transparent 1px);
+    background-size: 48px 48px, 48px 48px, 12px 12px, 12px 12px;
+  }
+
+  .card-white {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Solar Control Module — metallic dark panel */
+  .control-module {
+    background: linear-gradient(160deg, rgba(22,48,80,.95) 0%, rgba(10,28,56,.98) 100%);
+    border: 1.5px solid rgba(56,189,248,.35);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.06) inset,
+      0 1px 0 rgba(255,255,255,.12) inset,
+      0 8px 32px rgba(0,0,0,.45),
+      0 0 20px rgba(14,165,233,.12);
+    border-radius: 20px;
+  }
+
+  /* Metallic rim highlight */
+  .metal-rim {
+    background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 50%, rgba(255,255,255,.06) 100%);
+    border-radius: inherit;
+  }
+
+  .energy-glow {
+    text-shadow: 0 0 20px rgba(56,189,248,.9), 0 0 40px rgba(14,165,233,.5), 0 0 60px rgba(14,165,233,.25);
+  }
+
+  /* Frosted glass nav */
+  .nav-frosted {
+    background: rgba(7, 24, 48, 0.72);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-top: 1px solid rgba(56,189,248,.22);
+  }
+
+  /* Active nav tab glow halo */
+  .nav-glow {
+    background: radial-gradient(ellipse 70% 120% at 50% 100%, rgba(56,189,248,.28) 0%, transparent 70%);
+  }
+
+  /* Neon liquid tap bar */
+  .tap-bar-track {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(56,189,248,.25);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.4);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .tap-bar-fill {
+    background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 60%, #7dd3fc 100%);
+    box-shadow:
+      0 0 8px rgba(56,189,248,.8),
+      0 0 20px rgba(14,165,233,.5),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    border-radius: 999px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Liquid shimmer sweep */
+  .tap-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.22) 50%, transparent 100%);
+    animation: shimmer 2.2s linear infinite;
+  }
+
+  .cloud-shape {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50px;
+    position: relative;
+  }
+}
+
+/* ── Animations ───────────────────────────────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Slower, gentler "breathing" bob for the pedestal robot */
+@keyframes breathe {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,220,0,.5), 0 5px 0 rgba(0,0,0,.3); }
+  50%       { box-shadow: 0 0 40px rgba(255,220,0,.9), 0 5px 0 rgba(0,0,0,.3); }
+}
+
+@keyframes lightning-pulse {
+  0%, 100% { opacity: 1;   filter: drop-shadow(0 0 3px #fde047); }
+  50%       { opacity: .65; filter: drop-shadow(0 0 10px #fbbf24); }
+}
+
+@keyframes gear-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes bounce-tap {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes energy-float {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes pedestal-glow {
+  0%, 100% { box-shadow: 0 0 16px rgba(56,189,248,.5), 0 0 32px rgba(14,165,233,.25); }
+  50%       { box-shadow: 0 0 28px rgba(56,189,248,.85), 0 0 56px rgba(14,165,233,.5); }
+}
+
+.robot-float {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.tap-btn-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.energy-particle {
+  animation: energy-float 1s ease-out forwards;
+  pointer-events: none;
+  position: fixed;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  color: #38bdf8;
+  z-index: 9999;
+  text-shadow: 0 0 10px rgba(56,189,248,.9);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(56,189,248,.25); border-radius: 2px; }
