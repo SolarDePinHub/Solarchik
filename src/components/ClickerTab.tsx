@@ -58,6 +58,7 @@ export default function ClickerTab({
   level, energyCap, levelProgress, kWToNextLevel, lang, onLangSwitch, onReset, isSyncing = false, equippedSkinId, t,
 }: ClickerTabProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [isTapping, setIsTapping] = useState(false);
   const [mood, setMood] = useState<RobotMood>('normal');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [wakeUpPending, setWakeUpPending] = useState(false);
@@ -144,6 +145,8 @@ export default function ClickerTab({
 
       haptic(10);
       onTap();
+      setIsTapping(true);
+      setTimeout(() => setIsTapping(false), 120);
 
       // Random reaction: wink or happy
       const reactions: RobotMood[] = ['wink', 'happy', 'happy', 'wink', 'normal', 'happy'];
@@ -205,17 +208,15 @@ export default function ClickerTab({
   return (
     <div className="flex flex-col items-center flex-1 relative overflow-hidden">
 
-      {/* ── Forest background image ──────────────────────────────────── */}
-      <img
-        src="/summer-forest-1-68284-440x275-MM-80.webp"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full pointer-events-none select-none"
-        style={{ objectFit: 'cover', objectPosition: 'center', zIndex: 0 }}
-      />
-      {/* Dark overlay so UI stays readable over the bright forest */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1,
-        background: 'linear-gradient(180deg, rgba(0,10,4,.45) 0%, rgba(0,10,4,.2) 40%, rgba(0,10,4,.65) 100%)' }} />
+      {/* Ambient depth overlay */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 100% 70% at 50% 0%, rgba(56,189,248,.06) 0%, transparent 65%)' }} />
+
+      {/* Star flares */}
+      <div className="absolute top-10 left-8 w-1 h-1 rounded-full bg-sky-300/60" />
+      <div className="absolute top-6 left-24 w-0.5 h-0.5 rounded-full bg-white/50" />
+      <div className="absolute top-20 right-12 w-1 h-1 rounded-full bg-sky-200/50" />
+      <div className="absolute top-8 right-28 w-0.5 h-0.5 rounded-full bg-white/40" />
 
       {/* ── SOLAR CONTROL MODULE ─────────────────────────────────────── */}
       <div className="mx-3 mt-3 w-[calc(100%-1.5rem)] relative z-10">
@@ -364,14 +365,17 @@ export default function ClickerTab({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
+                  {/* Background ring */}
                   <circle cx="135" cy="135" r="125" fill="none"
                     stroke="rgba(255,215,0,0.15)" strokeWidth="6"/>
+                  {/* Progress ring */}
                   <circle cx="135" cy="135" r="125" fill="none"
                     stroke="#FFD700" strokeWidth="6" strokeLinecap="round"
                     strokeDasharray={`${2 * Math.PI * 125 * chargeProgress / 100} ${2 * Math.PI * 125}`}
                     transform="rotate(-90 135 135)"
                     style={{ filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.8))' }}
                   />
+                  {/* Percentage text */}
                   <text x="135" y="14" textAnchor="middle" fill="#FFD700"
                     fontSize="12" fontFamily="monospace" fontWeight="bold"
                     style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.9))' }}>
@@ -410,11 +414,11 @@ export default function ClickerTab({
               onPointerLeave={handlePointerUp}
               onPointerCancel={handlePointerUp}
               animate={
-                mood === 'charging'
-                  ? { scale: [1, 1.04, 1], filter: ['drop-shadow(0 0 18px rgba(255,215,0,.6))', 'drop-shadow(0 0 32px rgba(255,215,0,.9))', 'drop-shadow(0 0 18px rgba(255,215,0,.6))'] }
+                mood === 'charging' ? { scale: [1, 1.04, 1], filter: ['drop-shadow(0 0 18px rgba(255,215,0,.6))', 'drop-shadow(0 0 32px rgba(255,215,0,.9))', 'drop-shadow(0 0 18px rgba(255,215,0,.6))'] }
                 : mood === 'sleepy' ? { opacity: 0.75, y: 3 }
                 : batteryDead ? { opacity: 0.4 }
                 : !canTap  ? { opacity: 0.6 }
+                : isTapping ? { scale: 0.93, y: 6 }
                 : { scale: 1, y: 0, opacity: 1 }
               }
               transition={
@@ -423,7 +427,7 @@ export default function ClickerTab({
                   : { type: 'spring', stiffness: 600, damping: 15 }
               }
               className={`robot-float select-none ${canTap || wakeUpPending ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-              style={{ filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 22px rgba(255,200,50,.45))' : undefined, touchAction: 'none' }}
+              style={{ filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 18px rgba(56,189,248,.35))' : undefined, touchAction: 'none' }}
             >
               <RobotMascot size={230} tier={upgradeTier} mood={mood} skinId={equippedSkinId} />
             </motion.div>
@@ -505,8 +509,7 @@ export default function ClickerTab({
       <AnimatePresence>
         {showChargeHint && !wakeUpPending && (
           <motion.p
-            className="font-pixel text-[7px] text-yellow-300 text-center px-4 relative z-10 -mt-1"
-            style={{ textShadow: '0 1px 4px rgba(0,0,0,.7)' }}
+            className="font-pixel text-[7px] text-yellow-300/60 text-center px-4 relative z-10 -mt-1"
             initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           >
             {lang === 'uk' ? '⚡ Затримай дотик для СУПЕРЗАРЯДУ' : '⚡ Hold to SUPER CHARGE'}
@@ -514,16 +517,12 @@ export default function ClickerTab({
         )}
       </AnimatePresence>
 
-      {/* ── Bottom UI backdrop + controls ─────────────────────────────── */}
-      <div className="w-full relative z-10"
-        style={{ background: 'linear-gradient(180deg, rgba(8,20,50,.0) 0%, rgba(8,20,50,.82) 18%, rgba(5,14,38,.96) 100%)', paddingTop: 12 }}>
-
       {/* ── Neon TAP ENERGY bar ───────────────────────────────────────── */}
-      <div className="w-full px-5 pb-2">
+      <div className="w-full px-5 pb-2 relative z-10">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.85)' }}>{t.tapEnergy}</span>
-          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.85)' }}>
-            {tapCapacity} <span style={{ color: 'rgba(56,189,248,.45)' }}>|</span> {TAP_CAPACITY_MAX}
+          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.7)' }}>{t.tapEnergy}</span>
+          <span className="font-pixel text-[7px]" style={{ color: 'rgba(56,189,248,.7)' }}>
+            {tapCapacity} <span style={{ color: 'rgba(56,189,248,.35)' }}>|</span> {TAP_CAPACITY_MAX}
           </span>
         </div>
         <div className="tap-bar-track w-full h-4">
@@ -544,14 +543,10 @@ export default function ClickerTab({
       </div>
 
       {/* ── Tap button ────────────────────────────────────────────────── */}
-      <div className="w-full px-5 pb-5">
+      <div className="w-full px-5 pb-5 relative z-10">
         <motion.button
           ref={tapBtnRef}
           onClick={handleTap} onTouchStart={handleTap}
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onPointerCancel={handlePointerUp}
           disabled={!canTap}
           className="w-full py-4 rounded-2xl font-pixel text-sm tracking-wide"
           style={isBlockedBySyncing ? {
@@ -575,8 +570,6 @@ export default function ClickerTab({
           {isBlockedBySyncing ? 'SYNCING...' : canTap ? t.tapToGenerate : t.recharging}
         </motion.button>
       </div>
-
-      </div>{/* end bottom backdrop */}
 
       {/* Floating particles */}
       <AnimatePresence>
