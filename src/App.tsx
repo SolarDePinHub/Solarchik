@@ -1208,7 +1208,7 @@ export default function App() {
   return (
     <div className="min-h-dvh flex flex-col w-full relative overflow-hidden" data-sync={syncVersion}
       style={{
-        backgroundImage: activeTab === 'clicker' ? 'url(/images/photo_2026-06-28_01-51-28.jpg)' : undefined,
+        backgroundImage: activeTab === 'clicker' ? 'url(/images/photo_2026-06-28_01-51-28%20copy.jpg)' : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center top',
         backgroundRepeat: 'no-repeat',
