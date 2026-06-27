@@ -82,6 +82,9 @@ export const translations = {
     alreadyClaimed: 'Bonus already claimed!',
     screenshotPlaceholder: 'https://imgur.com/...',
     rejectedNotice: 'Rejected — please resubmit.',
+    pasteLink: 'PASTE LINK',
+    attachPhoto: 'ATTACH PHOTO',
+    tapToUpload: 'TAP TO CHOOSE PHOTO',
 
     // Care
     careCenter: 'CARE CENTER',
@@ -219,6 +222,9 @@ export const translations = {
     alreadyClaimed: 'Бонус вже отримано!',
     screenshotPlaceholder: 'https://imgur.com/...',
     rejectedNotice: 'Відхилено — надішліть знову.',
+    pasteLink: 'ВСТАВИТИ ПОСИЛАННЯ',
+    attachPhoto: 'ПРИКРІПИТИ ФОТО',
+    tapToUpload: 'НАТИСНИ ЩОБ ВИБРАТИ ФОТО',
 
     // Care
     careCenter: 'ЦЕНТР ДОГЛЯДУ',

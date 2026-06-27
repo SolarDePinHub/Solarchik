@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Check, Clock, XCircle, Send, Flame } from 'lucide-react';
+import { ExternalLink, Check, Clock, XCircle, Send, Flame, Link2, Camera, X } from 'lucide-react';
 import RobotMascot from './RobotMascot';
 import { supabase } from '../lib/supabase';
 import { DAILY_REWARDS } from '../lib/gameConfig';
@@ -21,6 +21,7 @@ interface BinanceBoostTabProps {
 }
 
 type SubmissionStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'claimed';
+type InputMode = 'url' | 'photo';
 
 function getTodayStr(): string {
   return new Date().toISOString().split('T')[0];
@@ -41,11 +42,17 @@ export default function BinanceBoostTab({
 }: BinanceBoostTabProps) {
   const [status, setStatus] = useState<SubmissionStatus>('none');
   const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<InputMode>('url');
   const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDailyBonus, setShowDailyBonus] = useState(false);
   const [claimedReward, setClaimedReward] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const today = getTodayStr();
   const yesterday = getYesterdayStr();
@@ -58,11 +65,9 @@ export default function BinanceBoostTab({
     : dailyStreak % 7 === 0 ? 7
     : dailyStreak % 7;
   const canClaimToday = !alreadyClaimedToday;
-  // next claim day index (0-based) within 7-day cycle
   const nextClaimIdx = missedDay ? 0 : claimedInCycle % 7;
   const todayReward = DAILY_REWARDS[nextClaimIdx];
 
-  // Load saved submission
   useEffect(() => {
     const saved = localStorage.getItem(SUBMISSION_KEY);
     if (saved) {
@@ -78,19 +83,76 @@ export default function BinanceBoostTab({
     if (data) setStatus(data.status as SubmissionStatus);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const uploadFileToStorage = async (file: File): Promise<string> => {
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const path = `${playerId ?? 'anon'}/${Date.now()}.${ext}`;
+    setUploading(true);
+    setUploadProgress(30);
+
+    const { data, error } = await supabase.storage
+      .from('vote-screenshots')
+      .upload(path, file, { contentType: file.type, upsert: false });
+
+    setUploadProgress(80);
+    setUploading(false);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('vote-screenshots')
+      .getPublicUrl(data.path);
+
+    setUploadProgress(100);
+    return publicUrl;
+  };
+
   const handleSubmit = async () => {
-    if (!screenshotUrl.trim()) return;
     setSubmitting(true);
-    const { data, error } = await supabase
-      .from('screenshot_submissions')
-      .insert({ player_id: playerId ?? null, player_name: playerName ?? 'Unknown',
-        screenshot_url: screenshotUrl.trim(), status: 'pending' })
-      .select('id').single();
-    setSubmitting(false);
-    if (!error && data) {
-      setSubmissionId(data.id);
-      setStatus('pending');
-      localStorage.setItem(SUBMISSION_KEY, JSON.stringify({ id: data.id }));
+    try {
+      let finalUrl = screenshotUrl.trim();
+
+      if (inputMode === 'photo') {
+        if (!selectedFile) return;
+        finalUrl = await uploadFileToStorage(selectedFile);
+      } else {
+        if (!finalUrl) return;
+      }
+
+      const { data, error } = await supabase
+        .from('screenshot_submissions')
+        .insert({
+          player_id: playerId ?? null,
+          player_name: playerName ?? 'Unknown',
+          screenshot_url: finalUrl,
+          status: 'pending',
+        })
+        .select('id').single();
+
+      if (!error && data) {
+        setSubmissionId(data.id);
+        setStatus('pending');
+        localStorage.setItem(SUBMISSION_KEY, JSON.stringify({ id: data.id }));
+      }
+    } catch (err) {
+      console.error('[BinanceBoostTab] submit error:', err);
+    } finally {
+      setSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -110,12 +172,22 @@ export default function BinanceBoostTab({
     setShowDailyBonus(true);
   };
 
+  const switchMode = (mode: InputMode) => {
+    setInputMode(mode);
+    clearFile();
+    setScreenshotUrl('');
+  };
+
   const statusConfig = {
     pending:  { icon: Clock,   color: 'text-amber-500', label: t.pending },
     approved: { icon: Check,   color: 'text-green-500', label: t.approved },
     rejected: { icon: XCircle, color: 'text-red-500',   label: t.rejected },
     claimed:  { icon: Check,   color: 'text-sky-500',   label: t.alreadyClaimed },
   };
+
+  const canSubmit = inputMode === 'url'
+    ? screenshotUrl.trim().length > 0
+    : selectedFile !== null;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -146,7 +218,7 @@ export default function BinanceBoostTab({
             <div className="ml-auto flex items-center gap-1.5">
               <span className="text-lg">🔥</span>
               <span className="font-pixel text-orange-500 text-sm font-bold">{dailyStreak}</span>
-            <span className="font-pixel text-gray-400 text-[7px]">{t.days}</span>
+              <span className="font-pixel text-gray-400 text-[7px]">{t.days}</span>
             </div>
           </div>
 
@@ -187,9 +259,7 @@ export default function BinanceBoostTab({
           {/* Claim button */}
           {alreadyClaimedToday ? (
             <div className="w-full py-3 rounded-xl bg-emerald-50 border-2 border-emerald-200 text-center">
-              <p className="font-pixel text-[9px] text-emerald-600">
-                {t.claimedToday}
-              </p>
+              <p className="font-pixel text-[9px] text-emerald-600">{t.claimedToday}</p>
             </div>
           ) : (
             <motion.button
@@ -203,9 +273,7 @@ export default function BinanceBoostTab({
           )}
 
           {missedDay && dailyStreak > 0 && (
-            <p className="font-pixel text-[8px] text-red-500 text-center mt-2">
-              {t.streakReset}
-            </p>
+            <p className="font-pixel text-[8px] text-red-500 text-center mt-2">{t.streakReset}</p>
           )}
         </motion.div>
 
@@ -245,17 +313,116 @@ export default function BinanceBoostTab({
               {status === 'rejected' && (
                 <p className="text-red-500 text-xs text-center font-medium">{t.rejectedNotice}</p>
               )}
-              <input
-                type="url" value={screenshotUrl} onChange={(e) => setScreenshotUrl(e.target.value)}
-                placeholder={t.screenshotPlaceholder}
-                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-400 text-gray-700"
-              />
+
+              {/* Mode toggle */}
+              <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+                <button
+                  onClick={() => switchMode('url')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-pixel text-[8px] transition-all ${
+                    inputMode === 'url'
+                      ? 'bg-white text-sky-600 shadow-sm'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  <Link2 size={12} />
+                  {t.pasteLink}
+                </button>
+                <button
+                  onClick={() => switchMode('photo')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-pixel text-[8px] transition-all ${
+                    inputMode === 'photo'
+                      ? 'bg-white text-sky-600 shadow-sm'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  <Camera size={12} />
+                  {t.attachPhoto}
+                </button>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {inputMode === 'url' ? (
+                  <motion.div
+                    key="url"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <input
+                      type="url"
+                      value={screenshotUrl}
+                      onChange={(e) => setScreenshotUrl(e.target.value)}
+                      placeholder={t.screenshotPlaceholder}
+                      className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-400 text-gray-700"
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="photo"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.15 }}
+                    className="space-y-2"
+                  >
+                    {previewUrl ? (
+                      <div className="relative rounded-xl overflow-hidden border-2 border-sky-300 bg-gray-50">
+                        <img
+                          src={previewUrl}
+                          alt="preview"
+                          className="w-full max-h-48 object-contain"
+                        />
+                        <button
+                          onClick={clearFile}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center"
+                        >
+                          <X size={14} className="text-white" />
+                        </button>
+                        <div className="px-3 py-1.5 bg-sky-50 border-t border-sky-200">
+                          <p className="font-pixel text-[7px] text-sky-600 truncate">{selectedFile?.name}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full border-2 border-dashed border-gray-300 rounded-xl py-6 flex flex-col items-center gap-2 hover:border-sky-400 hover:bg-sky-50 transition-colors"
+                      >
+                        <Camera size={28} className="text-gray-300" />
+                        <p className="font-pixel text-[8px] text-gray-400">{t.tapToUpload}</p>
+                        <p className="text-[10px] text-gray-300">JPG, PNG, WEBP — max 5 MB</p>
+                      </button>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileSelect}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Upload progress bar */}
+              {uploading && (
+                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <motion.div
+                    className="h-full bg-sky-400 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${uploadProgress}%` }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+              )}
+
               <motion.button
-                onClick={handleSubmit} disabled={!screenshotUrl.trim() || submitting}
+                onClick={handleSubmit}
+                disabled={!canSubmit || submitting || uploading}
                 whileTap={{ scale: 0.97 }}
                 className="w-full py-3 rounded-xl bg-sky-500 text-white font-pixel text-[9px] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting
+                {(submitting || uploading)
                   ? <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                   : <Send size={14} />}
                 {t.submitScreenshot}
@@ -281,13 +448,16 @@ export default function BinanceBoostTab({
                 })()}
               </div>
               {status === 'pending' && (
-                <button onClick={() => submissionId && checkStatus(submissionId)}
-                  className="w-full py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-pixel text-[9px] flex items-center justify-center gap-2">
+                <button
+                  onClick={() => submissionId && checkStatus(submissionId)}
+                  className="w-full py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-pixel text-[9px] flex items-center justify-center gap-2"
+                >
                   <Clock size={12} /> {t.checkStatus}
                 </button>
               )}
               <motion.button
-                onClick={handleClaim} disabled={status !== 'approved'}
+                onClick={handleClaim}
+                disabled={status !== 'approved'}
                 whileTap={status === 'approved' ? { scale: 0.96 } : {}}
                 className={`w-full py-3 rounded-xl font-pixel text-[9px] flex items-center justify-center gap-2 ${
                   status === 'claimed' ? 'bg-sky-100 text-sky-500 cursor-default' :
@@ -313,7 +483,6 @@ export default function BinanceBoostTab({
         )}
       </AnimatePresence>
 
-      {/* Daily bonus claimed modal — fully removed from DOM when not shown */}
       {showDailyBonus && (
         <motion.div
           className="fixed inset-0 z-[100] flex items-center justify-center"
@@ -321,13 +490,7 @@ export default function BinanceBoostTab({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {/* Backdrop — click anywhere to dismiss */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowDailyBonus(false)}
-          />
-
-          {/* Card */}
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowDailyBonus(false)} />
           <motion.div
             className="relative z-10 mx-6 w-full max-w-xs"
             initial={{ scale: 0.7, opacity: 0, y: 40 }}
@@ -336,44 +499,27 @@ export default function BinanceBoostTab({
             transition={{ type: 'spring', stiffness: 420, damping: 22 }}
           >
             <div className="bg-gradient-to-b from-orange-400 to-amber-500 rounded-3xl px-6 py-6 shadow-2xl border-4 border-orange-300 text-center">
-              {/* Stars */}
               <div className="flex justify-center gap-1 mb-2">
                 {['★', '★', '★'].map((s, i) => (
-                  <motion.span
-                    key={i}
-                    className="text-white text-xl"
-                    initial={{ y: -10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                  <motion.span key={i} className="text-white text-xl"
+                    initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: i * 0.07, type: 'spring', stiffness: 400 }}
                   >{s}</motion.span>
                 ))}
               </div>
-
               <p className="font-pixel text-white text-xs tracking-widest mb-1">{t.dailyRewards}</p>
-
-              <motion.div
-                className="my-3"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.15, type: 'spring', stiffness: 500, damping: 16 }}
-              >
-                <span className="font-pixel text-white text-4xl drop-shadow-lg">
-                  +{fmt(claimedReward)}
-                </span>
+              <motion.div className="my-3"
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                transition={{ delay: 0.15, type: 'spring', stiffness: 500, damping: 16 }}>
+                <span className="font-pixel text-white text-4xl drop-shadow-lg">+{fmt(claimedReward)}</span>
                 <span className="font-pixel text-yellow-200 text-lg ml-1">kW</span>
               </motion.div>
-
-              <p className="font-pixel text-orange-100 text-[8px] tracking-wide mb-4">
-                {t.claimed} ⚡
-              </p>
-
+              <p className="font-pixel text-orange-100 text-[8px] tracking-wide mb-4">{t.claimed} ⚡</p>
               <motion.button
                 onClick={() => setShowDailyBonus(false)}
                 whileTap={{ scale: 0.95 }}
                 className="w-full py-3 bg-white rounded-xl font-pixel text-[9px] text-orange-600 tracking-wide"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
               >
                 ⚡ OK!
               </motion.button>
