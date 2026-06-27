@@ -912,7 +912,7 @@ export default function App() {
 
   if (showAdmin) {
     return (
-      <div className="min-h-dvh flex flex-col max-w-sm mx-auto overflow-hidden">
+      <div className="min-h-dvh flex flex-col w-full overflow-hidden">
         <motion.div
           className="flex flex-col flex-1"
           initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
@@ -1045,7 +1045,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col max-w-sm mx-auto relative overflow-hidden sky-gradient solar-grid" data-sync={syncVersion}>
+    <div className="min-h-dvh flex flex-col w-full relative overflow-hidden sky-gradient solar-grid" data-sync={syncVersion}>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{

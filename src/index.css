@@ -12,14 +12,17 @@
   body {
     font-family: 'Nunito', sans-serif;
     background: #0d1f3c;
-    min-height: 100dvh;
+    height: 100dvh;
+    max-height: 100dvh;
     overflow: hidden;
   }
 
   #root {
-    min-height: 100dvh;
+    height: 100dvh;
+    max-height: 100dvh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 }
 

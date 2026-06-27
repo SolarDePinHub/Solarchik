@@ -30,7 +30,7 @@ export const TAP_REGEN_RATE = 10;
 export const BATTERY_DECAY_PER_HOUR = 5;
 
 /** kW cost to restore battery to 100%. */
-export const BATTERY_FEED_COST = 1000;
+export const BATTERY_FEED_COST = 30;
 
 // ─── Visual evolution thresholds ─────────────────────────────────────────────
 
