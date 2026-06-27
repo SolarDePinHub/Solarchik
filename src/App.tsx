@@ -389,6 +389,24 @@ export default function App() {
             data.name = tgName;
           }
 
+          // Apply and clear any pending referral bonus (set by DB trigger when someone
+          // joins via this player's link). We do it here so the debounced sync can't
+          // overwrite it before it's applied.
+          const pendingBonus = safeNum(data.pending_referral_bonus, 0);
+          if (pendingBonus > 0) {
+            restoredState.energy += pendingBonus;
+            restoredState.totalEnergyEarned += pendingBonus;
+            restoredState.peakEnergy = Math.max(restoredState.peakEnergy ?? 0, restoredState.energy);
+            // Write to DB atomically: update energy and clear pending bonus in one call
+            supabase.from('players').update({
+              energy: restoredState.energy,
+              total_energy_earned: restoredState.totalEnergyEarned,
+              pending_referral_bonus: 0,
+            }).eq('id', data.id).then(({ error: e }) => {
+              if (e) console.error('[initPlayer] pending bonus write failed:', e.message);
+            });
+          }
+
           setGameState(restoredState);
           setCurrentEnergy(safeNum(restoredState.energy, 0));
           setDisplayTapProgress(safeNum(restoredState.tapProgress, 0));
@@ -651,7 +669,9 @@ export default function App() {
     setTimeout(() => {
       const playerId = localStorage.getItem(PLAYER_ID_KEY);
       if (playerId) {
-        const snapshotEnergy = gameStateRef.current.energy + reward;
+        // gameStateRef already has prev.energy+reward applied by setGameState above,
+        // so use it directly (do NOT add reward again).
+        const snapshotEnergy = gameStateRef.current.energy;
         supabase.from('players').update({
           energy: snapshotEnergy,
           total_energy_earned: finalTotalEarned,
