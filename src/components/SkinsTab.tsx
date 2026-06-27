@@ -88,6 +88,7 @@ function SkinCard({
           : '2px solid rgba(255,255,255,0.1)',
         boxShadow: equipped ? '0 0 16px rgba(56,189,248,0.5)' : undefined,
         opacity: isExpired ? 0.5 : 1,
+        touchAction: 'pan-y',
       }}
     >
       {/* Equipped glow rim */}
@@ -239,7 +240,7 @@ export default function SkinsTab({
       </div>
 
       {/* Skin grid */}
-      <div className="flex-1 overflow-y-auto px-3 pb-24" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex-1 overflow-y-auto px-3 pb-24" style={{ scrollbarWidth: 'none', touchAction: 'pan-y' }}>
         <div className="grid grid-cols-2 gap-2">
           {filteredSkins.map((skin) => {
             const owned = isSkinOwned(ownedSkins, skin.id);
