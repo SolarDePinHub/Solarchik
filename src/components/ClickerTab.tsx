@@ -58,7 +58,6 @@ export default function ClickerTab({
   level, energyCap, levelProgress, kWToNextLevel, lang, onLangSwitch, onReset, isSyncing = false, equippedSkinId, t,
 }: ClickerTabProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
-  const [isTapping, setIsTapping] = useState(false);
   const [mood, setMood] = useState<RobotMood>('normal');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [wakeUpPending, setWakeUpPending] = useState(false);
@@ -145,8 +144,6 @@ export default function ClickerTab({
 
       haptic(10);
       onTap();
-      setIsTapping(true);
-      setTimeout(() => setIsTapping(false), 120);
 
       // Random reaction: wink or happy
       const reactions: RobotMood[] = ['wink', 'happy', 'happy', 'wink', 'normal', 'happy'];
@@ -207,6 +204,18 @@ export default function ClickerTab({
 
   return (
     <div className="flex flex-col items-center flex-1 relative overflow-hidden">
+
+      {/* ── Forest background image ──────────────────────────────────── */}
+      <img
+        src="/summer-forest-1-68284-440x275-MM-80.webp"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full pointer-events-none select-none"
+        style={{ objectFit: 'cover', objectPosition: 'center', zIndex: 0 }}
+      />
+      {/* Dark overlay so UI stays readable over the bright forest */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1,
+        background: 'linear-gradient(180deg, rgba(0,10,4,.45) 0%, rgba(0,10,4,.2) 40%, rgba(0,10,4,.65) 100%)' }} />
 
       {/* ── SOLAR CONTROL MODULE ─────────────────────────────────────── */}
       <div className="mx-3 mt-3 w-[calc(100%-1.5rem)] relative z-10">
@@ -406,7 +415,6 @@ export default function ClickerTab({
                 : mood === 'sleepy' ? { opacity: 0.75, y: 3 }
                 : batteryDead ? { opacity: 0.4 }
                 : !canTap  ? { opacity: 0.6 }
-                : isTapping ? { scale: 0.93, y: 6 }
                 : { scale: 1, y: 0, opacity: 1 }
               }
               transition={
@@ -540,6 +548,10 @@ export default function ClickerTab({
         <motion.button
           ref={tapBtnRef}
           onClick={handleTap} onTouchStart={handleTap}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           disabled={!canTap}
           className="w-full py-4 rounded-2xl font-pixel text-sm tracking-wide"
           style={isBlockedBySyncing ? {
