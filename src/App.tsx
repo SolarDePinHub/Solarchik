@@ -1209,7 +1209,7 @@ export default function App() {
   return (
     <div className="min-h-dvh flex flex-col w-full relative overflow-hidden"
       data-sync={syncVersion}
-      style={{ background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : '#87ceeb' }}>
+      style={{ background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : '#1a0533' }}>
 
       {/* Illustrated scene background — lowest layer */}
       {activeTab === 'clicker' && <SceneBackground />}
