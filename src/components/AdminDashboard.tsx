@@ -220,7 +220,7 @@ function EconomySection({ onConfigChange }: { onConfigChange: AdminDashboardProp
         upgrades,
         tapCost: String(data?.tap_cost ?? 10),
         tapRegenRate: String(data?.tap_regen_rate ?? 10),
-        tapCapacityMax: String(data?.tap_capacity_max ?? 1000),
+        tapCapacityMax: String(data?.tap_capacity_max ?? 30),
         batteryFeedCost: String(data?.battery_feed_cost ?? 1000),
         batteryDecayPerHour: String(data?.battery_decay_per_hour ?? 5),
       });
@@ -243,7 +243,7 @@ function EconomySection({ onConfigChange }: { onConfigChange: AdminDashboardProp
       upgrade_overrides: upgradeOverrides,
       tap_cost: parseInt(form.tapCost) || 10,
       tap_regen_rate: parseInt(form.tapRegenRate) || 10,
-      tap_capacity_max: parseInt(form.tapCapacityMax) || 1000,
+      tap_capacity_max: parseInt(form.tapCapacityMax) || 30,
       battery_feed_cost: parseInt(form.batteryFeedCost) || 1000,
       battery_decay_per_hour: parseFloat(form.batteryDecayPerHour) || 5,
       updated_at: new Date().toISOString(),
