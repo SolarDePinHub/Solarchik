@@ -99,60 +99,60 @@ function SkinCard({
 
       {/* Badge */}
       {badgeLabel && (
-        <div className="absolute top-1.5 left-1.5 z-10 px-1.5 py-0.5 rounded-full"
-          style={{ background: badgeColor, fontSize: 5, fontFamily: "'Press Start 2P', monospace", color: '#000', fontWeight: 'bold' }}>
+        <div className="absolute top-1 left-1 z-10 px-1 py-0.5 rounded-full"
+          style={{ background: badgeColor, fontSize: 4, fontFamily: "'Press Start 2P', monospace", color: '#000', fontWeight: 'bold' }}>
           {badgeLabel}
         </div>
       )}
 
       {/* Equipped checkmark */}
       {equipped && (
-        <div className="absolute top-1.5 right-1.5 z-10 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: '#38BDF8', fontSize: 10 }}>
+        <div className="absolute top-1 right-1 z-10 w-4 h-4 rounded-full flex items-center justify-center"
+          style={{ background: '#38BDF8', fontSize: 8 }}>
           ✓
         </div>
       )}
 
       {/* Robot preview */}
-      <div className="pt-2 pb-1 relative">
-        <RobotMascot size={80} skinId={skin.id} />
+      <div className="pt-1.5 pb-0.5 relative">
+        <RobotMascot size={56} skinId={skin.id} />
         {(locked || isExpired) && (
           <div className="absolute inset-0 flex items-center justify-center rounded-xl"
             style={{ background: 'rgba(0,0,0,0.55)' }}>
-            <span style={{ fontSize: 22 }}>{isExpired ? '⏰' : '🔒'}</span>
+            <span style={{ fontSize: 16 }}>{isExpired ? '⏰' : '🔒'}</span>
           </div>
         )}
       </div>
 
       {/* Name + price */}
-      <div className="px-2 pb-2.5 w-full">
-        <p className="font-pixel text-white leading-tight"
-          style={{ fontSize: 7, textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>
+      <div className="px-1.5 pb-2 w-full">
+        <p className="font-pixel text-white leading-tight truncate"
+          style={{ fontSize: 5.5, textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>
           {name}
         </p>
-        <div className="mt-1">
+        <div className="mt-0.5">
           {owned ? (
-            <p className="font-pixel text-emerald-400 leading-none" style={{ fontSize: 6 }}>
-              {equipped ? (lang === 'uk' ? '✓ ОДЯГНЕНО' : '✓ EQUIPPED') : (lang === 'uk' ? 'КУПЛЕНО' : 'OWNED')}
+            <p className="font-pixel text-emerald-400 leading-none" style={{ fontSize: 5 }}>
+              {equipped ? (lang === 'uk' ? '✓ ВДЯГНЕНО' : '✓ ON') : (lang === 'uk' ? 'КУПЛЕНО' : 'OWNED')}
             </p>
           ) : skin.type === 'challenge' ? (
             <p className={`font-pixel leading-none ${challengeUnlocked ? 'text-violet-300' : 'text-slate-400'}`}
-              style={{ fontSize: 6 }}>
+              style={{ fontSize: 5 }}>
               {challengeUnlocked
-                ? (lang === 'uk' ? '🔓 РОЗБЛОКОВАНО' : '🔓 UNLOCKED')
-                : (lang === 'uk' ? '🔒 ВИКЛИК' : '🔒 CHALLENGE')}
+                ? (lang === 'uk' ? '🔓 OK' : '🔓 OK')
+                : (lang === 'uk' ? '🔒 ВИКЛИК' : '🔒 TASK')}
             </p>
           ) : isExpired ? (
-            <p className="font-pixel text-red-400 leading-none" style={{ fontSize: 6 }}>
-              {lang === 'uk' ? 'ЗАКІНЧИВСЯ' : 'EXPIRED'}
+            <p className="font-pixel text-red-400 leading-none" style={{ fontSize: 5 }}>
+              {lang === 'uk' ? 'КІНЕЦЬ' : 'EXPIRED'}
             </p>
           ) : skin.price > 0 ? (
             <p className={`font-pixel leading-none ${canAfford ? 'text-yellow-300' : 'text-red-400'}`}
-              style={{ fontSize: 6 }}>
-              {formatEnergy(skin.price)} kW
+              style={{ fontSize: 5 }}>
+              {formatEnergy(skin.price)}kW
             </p>
           ) : (
-            <p className="font-pixel text-slate-400 leading-none" style={{ fontSize: 6 }}>FREE</p>
+            <p className="font-pixel text-slate-400 leading-none" style={{ fontSize: 5 }}>FREE</p>
           )}
         </div>
       </div>
@@ -177,7 +177,7 @@ export default function SkinsTab({
     <div className="flex flex-col flex-1 overflow-hidden" style={{ background: 'linear-gradient(180deg, #0a1628 0%, #060e1f 100%)' }}>
 
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 pt-4 pb-2 flex-shrink-0">
+      <div className="flex items-center gap-2 px-4 pt-3 pb-1.5 flex-shrink-0">
         <button onClick={onBack}
           className="w-8 h-8 flex items-center justify-center rounded-xl"
           style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)' }}>
@@ -197,25 +197,20 @@ export default function SkinsTab({
       </div>
 
       {/* Currently wearing preview */}
-      <div className="mx-3 mb-2 rounded-2xl flex-shrink-0"
-        style={{ background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.15)', padding: '10px 12px' }}>
-        <p className="font-pixel text-sky-400/60 mb-1" style={{ fontSize: 6 }}>
+      <div className="mx-3 mb-1.5 rounded-xl flex-shrink-0"
+        style={{ background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.15)', padding: '7px 10px' }}>
+        <p className="font-pixel text-sky-400/60 mb-0.5" style={{ fontSize: 5 }}>
           {lang === 'uk' ? 'ЗАРАЗ ВДЯГНЕНО' : 'CURRENTLY WEARING'}
         </p>
-        <div className="flex items-center gap-3">
-          <RobotMascot size={56} skinId={equippedSkinId} />
+        <div className="flex items-center gap-2">
+          <RobotMascot size={40} skinId={equippedSkinId} />
           <div className="flex-1">
-            <p className="font-pixel text-white" style={{ fontSize: 9 }}>
+            <p className="font-pixel text-white" style={{ fontSize: 7 }}>
               {lang === 'uk' ? equippedSkin.nameUk : equippedSkin.nameEn}
             </p>
             {equippedSkin.boostPercent > 0 && (
-              <p className="font-pixel text-yellow-300 mt-1" style={{ fontSize: 7 }}>
-                +{equippedSkin.boostPercent}% {lang === 'uk' ? 'до генерації' : 'generation boost'}
-              </p>
-            )}
-            {equippedSkin.type === 'limited' && equippedSkin.limitedUntil && (
-              <p className="font-pixel text-pink-400 mt-1" style={{ fontSize: 6 }}>
-                ⏰ {timeLeft(equippedSkin.limitedUntil)} {lang === 'uk' ? 'залишилось' : 'left'}
+              <p className="font-pixel text-yellow-300 mt-0.5" style={{ fontSize: 6 }}>
+                +{equippedSkin.boostPercent}% {lang === 'uk' ? 'буст' : 'boost'}
               </p>
             )}
           </div>
@@ -223,7 +218,7 @@ export default function SkinsTab({
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-1.5 px-3 pb-2 overflow-x-auto flex-shrink-0" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex gap-1 px-3 pb-1.5 overflow-x-auto flex-shrink-0" style={{ scrollbarWidth: 'none' }}>
         {TYPE_FILTERS.map((f) => (
           <button key={f.key} onClick={() => setFilterType(f.key)}
             className="flex-shrink-0 px-2.5 py-1.5 rounded-xl font-pixel transition-all"
@@ -240,8 +235,8 @@ export default function SkinsTab({
       </div>
 
       {/* Skin grid */}
-      <div className="flex-1 overflow-y-auto px-3 pb-24" style={{ scrollbarWidth: 'none', touchAction: 'pan-y' }}>
-        <div className="grid grid-cols-2 gap-2">
+      <div className="flex-1 overflow-y-auto px-3 pb-4" style={{ scrollbarWidth: 'none', touchAction: 'pan-y' }}>
+        <div className="grid grid-cols-3 gap-1.5">
           {filteredSkins.map((skin) => {
             const owned = isSkinOwned(ownedSkins, skin.id);
             const equipped = equippedSkinId === skin.id;
