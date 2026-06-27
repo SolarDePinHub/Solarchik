@@ -208,15 +208,6 @@ export default function ClickerTab({
   return (
     <div className="flex flex-col items-center flex-1 relative overflow-hidden">
 
-      {/* Ambient depth overlay */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 100% 70% at 50% 0%, rgba(56,189,248,.06) 0%, transparent 65%)' }} />
-
-      {/* Star flares */}
-      <div className="absolute top-10 left-8 w-1 h-1 rounded-full bg-sky-300/60" />
-      <div className="absolute top-6 left-24 w-0.5 h-0.5 rounded-full bg-white/50" />
-      <div className="absolute top-20 right-12 w-1 h-1 rounded-full bg-sky-200/50" />
-      <div className="absolute top-8 right-28 w-0.5 h-0.5 rounded-full bg-white/40" />
 
       {/* ── SOLAR CONTROL MODULE ─────────────────────────────────────── */}
       <div className="mx-3 mt-3 w-[calc(100%-1.5rem)] relative z-10">
