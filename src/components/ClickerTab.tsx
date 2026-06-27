@@ -41,52 +41,6 @@ interface Particle {
   value: number;
 }
 
-function SolarPanelGroup({ style }: { style?: React.CSSProperties }) {
-  return (
-    <div style={{ width: 130, height: 90, ...style }}>
-      {[0, 1, 2].map((col) => (
-        <div key={col} style={{ position: 'absolute', left: col * 44, top: col * 8, width: 40, height: 80 }}>
-          {[0, 1, 2].map((row) => (
-            <div key={row} style={{
-              position: 'absolute', top: row * 27, left: 0, width: 40, height: 24,
-              background: 'linear-gradient(135deg, #1a3a6b 0%, #2563b0 35%, #1e50a0 65%, #1a3a6b 100%)',
-              border: '1px solid rgba(56,189,248,.5)',
-              borderRadius: 3,
-              boxShadow: 'inset 0 0 6px rgba(56,189,248,.2)',
-            }}>
-              <div style={{ position: 'absolute', inset: 2, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1 }}>
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <div key={i} style={{ background: 'rgba(56,189,248,.12)', borderRadius: 1 }} />
-                ))}
-              </div>
-            </div>
-          ))}
-          <div style={{ position: 'absolute', bottom: -8, left: '45%', width: 3, height: 10, background: '#888', borderRadius: 1 }} />
-          <div style={{ position: 'absolute', bottom: -12, left: '30%', width: '40%', height: 4, background: '#777', borderRadius: 1 }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SolarPanelMini({ style }: { style?: React.CSSProperties }) {
-  return (
-    <div style={{ width: 90, height: 64, ...style }}>
-      {[0, 1].map((col) => (
-        <div key={col} style={{ position: 'absolute', left: col * 46, top: col * 5, width: 38, height: 58 }}>
-          {[0, 1, 2].map((row) => (
-            <div key={row} style={{
-              position: 'absolute', top: row * 20, left: 0, width: 38, height: 18,
-              background: 'linear-gradient(135deg, #1a3a6b 0%, #2563b0 40%, #1a3a6b 100%)',
-              border: '1px solid rgba(56,189,248,.4)', borderRadius: 2,
-            }} />
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function GearIcon({ spinning }: { spinning: boolean }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -263,93 +217,18 @@ export default function ClickerTab({
   return (
     <div className="flex flex-col items-center flex-1 relative overflow-hidden">
 
-      {/* ── Scenic landscape background ───────────────────────────────── */}
-      {/* Sky gradient */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'linear-gradient(180deg, #7ecef4 0%, #b8e4f9 28%, #d6eefc 50%, #c8e8a0 72%, #6db36d 100%)' }} />
+      {/* ── Scenic landscape background — actual artwork ─────────────── */}
+      <img
+        src="/images/photo_2026-06-28_01-51-28 copy.jpg"
+        alt=""
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ objectFit: 'cover', objectPosition: 'center top' }}
+      />
 
-      {/* Sun glow — golden */}
+      {/* Subtle darkening at very bottom so the bottom UI stays readable */}
       <div className="absolute pointer-events-none"
-        style={{ top: '10%', right: '22%', width: 56, height: 56, borderRadius: '50%',
-          background: 'radial-gradient(circle, #ffe066 0%, #ffb300 50%, rgba(255,179,0,0) 100%)',
-          boxShadow: '0 0 28px 12px rgba(255,200,0,.55), 0 0 60px 24px rgba(255,160,0,.25)' }} />
-
-      {/* Sun glow — blue (smaller, offset) */}
-      <div className="absolute pointer-events-none"
-        style={{ top: '7%', right: '32%', width: 34, height: 34, borderRadius: '50%',
-          background: 'radial-gradient(circle, #a8d8ff 0%, #38bdf8 55%, rgba(56,189,248,0) 100%)',
-          boxShadow: '0 0 18px 8px rgba(56,189,248,.6), 0 0 36px 16px rgba(14,165,233,.25)' }} />
-
-      {/* Cloud 1 — large, left-centre */}
-      <div className="absolute pointer-events-none" style={{ top: '14%', left: '4%', width: 180, height: 72, opacity: 0.92 }}>
-        <div style={{ position: 'absolute', bottom: 0, left: 20, width: 140, height: 40, background: 'rgba(255,255,255,.88)', borderRadius: 999, filter: 'blur(1px)' }} />
-        <div style={{ position: 'absolute', bottom: 18, left: 30, width: 90, height: 44, background: 'rgba(255,255,255,.85)', borderRadius: 999, filter: 'blur(1px)' }} />
-        <div style={{ position: 'absolute', bottom: 28, left: 55, width: 70, height: 40, background: 'rgba(255,255,255,.8)', borderRadius: 999, filter: 'blur(1px)' }} />
-      </div>
-
-      {/* Cloud 2 — mid-right */}
-      <div className="absolute pointer-events-none" style={{ top: '18%', right: '5%', width: 130, height: 55, opacity: 0.85 }}>
-        <div style={{ position: 'absolute', bottom: 0, left: 10, width: 110, height: 32, background: 'rgba(255,255,255,.82)', borderRadius: 999, filter: 'blur(1px)' }} />
-        <div style={{ position: 'absolute', bottom: 14, left: 18, width: 75, height: 36, background: 'rgba(255,255,255,.78)', borderRadius: 999, filter: 'blur(1px)' }} />
-        <div style={{ position: 'absolute', bottom: 24, left: 36, width: 52, height: 32, background: 'rgba(255,255,255,.75)', borderRadius: 999, filter: 'blur(1px)' }} />
-      </div>
-
-      {/* Cloud 3 — top-right small */}
-      <div className="absolute pointer-events-none" style={{ top: '8%', right: '12%', width: 90, height: 38, opacity: 0.75 }}>
-        <div style={{ position: 'absolute', bottom: 0, left: 8, width: 74, height: 24, background: 'rgba(255,255,255,.75)', borderRadius: 999, filter: 'blur(1px)' }} />
-        <div style={{ position: 'absolute', bottom: 10, left: 14, width: 50, height: 28, background: 'rgba(255,255,255,.72)', borderRadius: 999, filter: 'blur(1px)' }} />
-      </div>
-
-      {/* Ocean/sea band */}
-      <div className="absolute pointer-events-none"
-        style={{ top: '48%', left: 0, right: 0, height: '16%',
-          background: 'linear-gradient(180deg, rgba(64,164,240,.55) 0%, rgba(30,120,200,.45) 100%)',
-          clipPath: 'ellipse(120% 100% at 50% 0%)' }} />
-
-      {/* Distant beach/coastline */}
-      <div className="absolute pointer-events-none"
-        style={{ top: '52%', left: 0, right: 0, height: '10%',
-          background: 'linear-gradient(180deg, rgba(230,200,120,.6) 0%, rgba(180,160,80,.3) 100%)',
-          clipPath: 'polygon(0% 60%, 15% 30%, 35% 50%, 55% 20%, 75% 45%, 90% 25%, 100% 40%, 100% 100%, 0% 100%)' }} />
-
-      {/* Green hills — back left */}
-      <div className="absolute pointer-events-none"
-        style={{ bottom: '30%', left: '-5%', width: '55%', height: '28%',
-          background: 'linear-gradient(180deg, #5fad5f 0%, #3d8c3d 100%)',
-          borderRadius: '50% 80% 0 0', opacity: 0.85 }} />
-
-      {/* Green hills — back right */}
-      <div className="absolute pointer-events-none"
-        style={{ bottom: '28%', right: '-8%', width: '50%', height: '25%',
-          background: 'linear-gradient(180deg, #6bbf6b 0%, #42924f 100%)',
-          borderRadius: '80% 50% 0 0', opacity: 0.8 }} />
-
-      {/* Solar panels — foreground left */}
-      <SolarPanelGroup style={{ position: 'absolute', bottom: '14%', left: '-2%', transform: 'perspective(200px) rotateX(20deg) rotateY(12deg) scale(0.85)', opacity: 0.9 }} />
-
-      {/* Solar panels — foreground right */}
-      <SolarPanelGroup style={{ position: 'absolute', bottom: '12%', right: '-4%', transform: 'perspective(200px) rotateX(20deg) rotateY(-12deg) scale(0.75)', opacity: 0.85 }} />
-
-      {/* Solar panels — mid background left */}
-      <SolarPanelMini style={{ position: 'absolute', bottom: '34%', left: '8%', transform: 'perspective(160px) rotateX(28deg) scale(0.55)', opacity: 0.6 }} />
-
-      {/* Solar panels — mid background right */}
-      <SolarPanelMini style={{ position: 'absolute', bottom: '32%', right: '10%', transform: 'perspective(160px) rotateX(28deg) scale(0.45)', opacity: 0.55 }} />
-
-      {/* Foreground ground strip */}
-      <div className="absolute pointer-events-none"
-        style={{ bottom: 0, left: 0, right: 0, height: '20%',
-          background: 'linear-gradient(180deg, #5ab55a 0%, #3a8c3a 55%, #2d6e2d 100%)' }} />
-
-      {/* Grass texture overlay */}
-      <div className="absolute pointer-events-none"
-        style={{ bottom: '14%', left: 0, right: 0, height: '8%',
-          background: 'linear-gradient(180deg, rgba(90,180,90,.0) 0%, rgba(60,140,60,.45) 100%)' }} />
-
-      {/* Atmospheric haze between panels and robot */}
-      <div className="absolute pointer-events-none"
-        style={{ top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(180deg, rgba(255,255,255,.0) 0%, rgba(200,230,255,.08) 40%, rgba(160,220,140,.08) 70%, rgba(0,0,0,.15) 100%)' }} />
+        style={{ bottom: 0, left: 0, right: 0, height: '28%',
+          background: 'linear-gradient(180deg, rgba(5,14,38,0) 0%, rgba(5,14,38,.75) 100%)' }} />
 
       {/* ── SOLAR CONTROL MODULE ─────────────────────────────────────── */}
       <div className="mx-3 mt-3 w-[calc(100%-1.5rem)] relative z-10">
