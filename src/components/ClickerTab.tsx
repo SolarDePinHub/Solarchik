@@ -16,7 +16,7 @@ interface ClickerTabProps {
   tapProgress: number;
   onTap: () => void;
   onLongPress: () => void;
-  onNavChange: (tab: 'shop' | 'leaderboard' | 'boost' | 'care' | 'referral') => void;
+  onNavChange: (tab: 'shop' | 'leaderboard' | 'boost' | 'care' | 'referral' | 'skins') => void;
   multiplier: number;
   passiveIncome: number;
   tapCapacity: number;
@@ -30,6 +30,7 @@ interface ClickerTabProps {
   onLangSwitch: () => void;
   onReset: () => void;
   isSyncing?: boolean;
+  equippedSkinId?: string;
   t: Translations;
 }
 
@@ -54,7 +55,7 @@ function GearIcon({ spinning }: { spinning: boolean }) {
 export default function ClickerTab({
   energy, tapProgress, onTap, onLongPress, onNavChange, multiplier, passiveIncome,
   tapCapacity, upgradeTier = 0, batteryLevel,
-  level, energyCap, levelProgress, kWToNextLevel, lang, onLangSwitch, onReset, isSyncing = false, t,
+  level, energyCap, levelProgress, kWToNextLevel, lang, onLangSwitch, onReset, isSyncing = false, equippedSkinId, t,
 }: ClickerTabProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [isTapping, setIsTapping] = useState(false);
@@ -428,7 +429,7 @@ export default function ClickerTab({
               className={`robot-float select-none ${canTap || wakeUpPending ? 'cursor-pointer' : 'cursor-not-allowed'}`}
               style={{ filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 18px rgba(56,189,248,.35))' : undefined, touchAction: 'none' }}
             >
-              <RobotMascot size={230} tier={upgradeTier} mood={mood} />
+              <RobotMascot size={230} tier={upgradeTier} mood={mood} skinId={equippedSkinId} />
             </motion.div>
           </div>
 
@@ -489,6 +490,7 @@ export default function ClickerTab({
           {([
             { id: 'boost' as const, icon: '⚡', label: 'BOOST' },
             { id: 'care'  as const, icon: '🐾', label: 'CARE' },
+            { id: 'skins' as const, icon: '🎨', label: 'SKINS' },
           ]).map((tab) => (
             <motion.button key={tab.id}
               onClick={() => onNavChange(tab.id)}

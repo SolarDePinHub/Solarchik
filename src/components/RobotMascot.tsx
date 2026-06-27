@@ -1,10 +1,13 @@
 export type RobotMood = 'normal' | 'happy' | 'wink' | 'sleepy' | 'charging';
 
+import { getSkinById, type SkinColors } from '../lib/skins';
+
 interface RobotMascotProps {
   size?: number;
   className?: string;
   tier?: 0 | 1 | 2 | 3 | 4;
   mood?: RobotMood;
+  skinId?: string;
 }
 
 // tier 0 = default
@@ -12,11 +15,15 @@ interface RobotMascotProps {
 // tier 2 = 100k kW — golden panels + halo
 // tier 3 = 1M kW   — rainbow aura + crown
 // tier 4 = 10M kW  — platinum ultimate: solar wings + double crown + star burst
-export default function RobotMascot({ size = 180, className = '', tier = 0, mood = 'normal' }: RobotMascotProps) {
+export default function RobotMascot({ size = 180, className = '', tier = 0, mood = 'normal', skinId }: RobotMascotProps) {
   const filterId = `robot-glow-${tier}`;
+
+  const skinColors: SkinColors = getSkinById(skinId ?? 'default').colors;
+  const hasSkin = !!skinId && skinId !== 'default';
 
   const eyeOuter =
     mood === 'charging' ? '#FFD700'
+    : hasSkin ? skinColors.eyeOuter
     : tier >= 4 ? '#A855F7'
     : tier >= 3 ? '#FF4081'
     : tier >= 2 ? '#FF9800'
@@ -25,13 +32,14 @@ export default function RobotMascot({ size = 180, className = '', tier = 0, mood
 
   const eyeInner =
     mood === 'charging' ? '#FF6F00'
+    : hasSkin ? skinColors.eyeInner
     : tier >= 4 ? '#7B1FA2'
     : tier >= 3 ? '#C2185B'
     : tier >= 2 ? '#E65100'
     : tier >= 1 ? '#006064'
     : '#0D47A1';
 
-  const smileColor = tier >= 2 ? '#E65100' : '#0288D1';
+  const smileColor = hasSkin ? skinColors.smileColor : tier >= 2 ? '#E65100' : '#0288D1';
 
   return (
     <svg
@@ -176,26 +184,26 @@ export default function RobotMascot({ size = 180, className = '', tier = 0, mood
         {tier < 4 && (
           <>
             <rect x="10" y="100" width="35" height="55" rx="3"
-              fill={tier >= 2 ? '#F57F17' : '#1565C0'}
-              stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="2"/>
-            <rect x="12" y="103" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <rect x="29" y="103" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <rect x="12" y="128" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <rect x="29" y="128" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <line x1="10" y1="114" x2="45" y2="114" stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
-            <line x1="10" y1="125" x2="45" y2="125" stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
-            <line x1="27" y1="100" x2="27" y2="155" stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
+              fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#F57F17' : '#1565C0'}
+              stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="2"/>
+            <rect x="12" y="103" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <rect x="29" y="103" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <rect x="12" y="128" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <rect x="29" y="128" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <line x1="10" y1="114" x2="45" y2="114" stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
+            <line x1="10" y1="125" x2="45" y2="125" stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
+            <line x1="27" y1="100" x2="27" y2="155" stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
             <rect x="24" y="153" width="6" height="20" fill="#546E7A"/>
             <rect x="155" y="100" width="35" height="55" rx="3"
-              fill={tier >= 2 ? '#F57F17' : '#1565C0'}
-              stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="2"/>
-            <rect x="157" y="103" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <rect x="174" y="103" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <rect x="157" y="128" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <rect x="174" y="128" width="14" height="22" fill={tier >= 2 ? '#FB8C00' : '#1976D2'}/>
-            <line x1="155" y1="114" x2="190" y2="114" stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
-            <line x1="155" y1="125" x2="190" y2="125" stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
-            <line x1="172" y1="100" x2="172" y2="155" stroke={tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
+              fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#F57F17' : '#1565C0'}
+              stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="2"/>
+            <rect x="157" y="103" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <rect x="174" y="103" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <rect x="157" y="128" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <rect x="174" y="128" width="14" height="22" fill={hasSkin ? skinColors.solarFill : tier >= 2 ? '#FB8C00' : '#1976D2'}/>
+            <line x1="155" y1="114" x2="190" y2="114" stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
+            <line x1="155" y1="125" x2="190" y2="125" stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
+            <line x1="172" y1="100" x2="172" y2="155" stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0D47A1'} strokeWidth="1.5"/>
             <rect x="169" y="153" width="6" height="20" fill="#546E7A"/>
           </>
         )}
@@ -205,13 +213,13 @@ export default function RobotMascot({ size = 180, className = '', tier = 0, mood
 
         {/* Body */}
         <rect x="62" y="118" width="76" height="75" rx="12"
-          fill={tier >= 4 ? '#FAFAFA' : tier >= 3 ? '#FFF8E1' : '#ECEFF1'}
-          stroke={tier >= 4 ? '#E0E0E0' : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth={tier >= 4 ? 3 : 2}/>
+          fill={hasSkin ? skinColors.bodyFill : tier >= 4 ? '#FAFAFA' : tier >= 3 ? '#FFF8E1' : '#ECEFF1'}
+          stroke={hasSkin ? skinColors.bodyStroke : tier >= 4 ? '#E0E0E0' : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth={tier >= 4 ? 3 : 2}/>
         <rect x="72" y="128" width="56" height="40" rx="6"
-          fill={tier >= 2 ? '#FF9800' : '#29B6F6'}
-          stroke={tier >= 2 ? '#E65100' : '#0288D1'} strokeWidth="2"/>
+          fill={hasSkin ? skinColors.panelFill : tier >= 2 ? '#FF9800' : '#29B6F6'}
+          stroke={hasSkin ? skinColors.solarStroke : tier >= 2 ? '#E65100' : '#0288D1'} strokeWidth="2"/>
         <rect x="76" y="132" width="48" height="32" rx="4"
-          fill={tier >= 2 ? '#FFB74D' : '#4FC3F7'}/>
+          fill={hasSkin ? skinColors.panelInner : tier >= 2 ? '#FFB74D' : '#4FC3F7'}/>
         <line x1="76" y1="144" x2="124" y2="144" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
         <line x1="100" y1="132" x2="100" y2="164" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
         <circle cx="88" cy="138" r="3" fill={tier >= 1 ? '#00E5FF' : '#FFD700'} opacity="0.9"/>
@@ -224,55 +232,58 @@ export default function RobotMascot({ size = 180, className = '', tier = 0, mood
           </>
         )}
         <circle cx="100" cy="182" r="7"
-          fill={tier >= 2 ? '#FF9800' : '#FFD700'}
-          stroke={tier >= 2 ? '#E65100' : '#F9A825'} strokeWidth="2"/>
+          fill={hasSkin ? skinColors.accentFill : tier >= 2 ? '#FF9800' : '#FFD700'}
+          stroke={hasSkin ? skinColors.accentStroke : tier >= 2 ? '#E65100' : '#F9A825'} strokeWidth="2"/>
         <text x="100" y="186" textAnchor="middle" fill="#7B4F00" fontSize="8" fontWeight="bold">⚡</text>
 
         {/* Arms */}
         <rect x="38" y="126" width="26" height="18" rx="8"
-          fill={tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
+          fill={hasSkin ? skinColors.bodyFill : tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={hasSkin ? skinColors.bodyStroke : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
         <rect x="30" y="138" width="16" height="12" rx="6"
-          fill={tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
+          fill={hasSkin ? skinColors.limbFill : tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={hasSkin ? skinColors.limbAccent : tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
         <rect x="136" y="126" width="26" height="18" rx="8"
-          fill={tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
+          fill={hasSkin ? skinColors.bodyFill : tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={hasSkin ? skinColors.bodyStroke : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
         <rect x="154" y="138" width="16" height="12" rx="6"
-          fill={tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
+          fill={hasSkin ? skinColors.limbFill : tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={hasSkin ? skinColors.limbAccent : tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
 
         {/* Legs + feet */}
         <rect x="74" y="190" width="20" height="28" rx="8"
-          fill={tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
+          fill={hasSkin ? skinColors.bodyFill : tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={hasSkin ? skinColors.bodyStroke : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
         <rect x="106" y="190" width="20" height="28" rx="8"
-          fill={tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
+          fill={hasSkin ? skinColors.bodyFill : tier >= 3 ? '#FFF8E1' : '#ECEFF1'} stroke={hasSkin ? skinColors.bodyStroke : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth="2"/>
         <rect x="70" y="210" width="28" height="10" rx="5"
-          fill={tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
+          fill={hasSkin ? skinColors.limbFill : tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={hasSkin ? skinColors.limbAccent : tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
         <rect x="102" y="210" width="28" height="10" rx="5"
-          fill={tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
+          fill={hasSkin ? skinColors.limbFill : tier >= 2 ? '#FFE082' : '#CFD8DC'} stroke={hasSkin ? skinColors.limbAccent : tier >= 2 ? '#FFD700' : '#B0BEC5'} strokeWidth="1.5"/>
 
         {/* Head */}
         <rect x="58" y="63" width="84" height="70" rx="18"
           fill={
             mood === 'sleepy' ? '#D1D5DB'
+            : hasSkin ? skinColors.bodyFill
             : tier >= 4 ? '#FFFFFF'
             : tier >= 3 ? '#FFFDE7'
             : '#ECEFF1'
           }
-          stroke={tier >= 4 ? '#FFD700' : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth={tier >= 4 ? 3 : 2.5}/>
+          stroke={hasSkin ? skinColors.bodyStroke : tier >= 4 ? '#FFD700' : tier >= 3 ? '#FFD700' : '#B0BEC5'} strokeWidth={tier >= 4 ? 3 : 2.5}/>
         <rect x="64" y="70" width="72" height="46" rx="12"
           fill={
             mood === 'charging' ? '#FF8F00'
             : mood === 'sleepy' ? '#9CA3AF'
+            : hasSkin ? skinColors.panelFill
             : tier >= 4 ? '#FF6B35'
             : tier >= 3 ? '#FF6B35'
             : tier >= 2 ? '#FF9800'
             : tier >= 1 ? '#00BCD4'
             : '#29B6F6'
           }
-          stroke={tier >= 3 ? '#E65100' : tier >= 2 ? '#E65100' : tier >= 1 ? '#0097A7' : '#0288D1'}
+          stroke={hasSkin ? skinColors.solarStroke : tier >= 3 ? '#E65100' : tier >= 2 ? '#E65100' : tier >= 1 ? '#0097A7' : '#0288D1'}
           strokeWidth="2"/>
         <rect x="68" y="74" width="64" height="38" rx="9"
           fill={
             mood === 'charging' ? '#FFA000'
             : mood === 'sleepy' ? '#9CA3AF'
+            : hasSkin ? skinColors.panelInner
             : tier >= 4 ? '#FF8A50'
             : tier >= 3 ? '#FF8A50'
             : tier >= 2 ? '#FFB74D'
@@ -401,9 +412,9 @@ export default function RobotMascot({ size = 180, className = '', tier = 0, mood
 
         {/* Ear bolts */}
         <circle cx="58" cy="96" r="6"
-          fill={tier >= 2 ? '#FFD700' : '#90A4AE'} stroke={tier >= 2 ? '#F9A825' : '#78909C'} strokeWidth="1.5"/>
+          fill={hasSkin ? skinColors.accentFill : tier >= 2 ? '#FFD700' : '#90A4AE'} stroke={hasSkin ? skinColors.accentStroke : tier >= 2 ? '#F9A825' : '#78909C'} strokeWidth="1.5"/>
         <circle cx="142" cy="96" r="6"
-          fill={tier >= 2 ? '#FFD700' : '#90A4AE'} stroke={tier >= 2 ? '#F9A825' : '#78909C'} strokeWidth="1.5"/>
+          fill={hasSkin ? skinColors.accentFill : tier >= 2 ? '#FFD700' : '#90A4AE'} stroke={hasSkin ? skinColors.accentStroke : tier >= 2 ? '#F9A825' : '#78909C'} strokeWidth="1.5"/>
 
         {tier >= 1 && (
           <>

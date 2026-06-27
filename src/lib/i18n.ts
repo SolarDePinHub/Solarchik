@@ -131,6 +131,10 @@ export const translations = {
     restrictedAccess: 'Restricted access',
     admin: 'ADMIN',
 
+    // Skins
+    navSkins: 'Skins',
+    skinsStore: 'SKINS STORE',
+
     // Admin
     adminTitle: 'ADMIN DASHBOARD',
     screenshots: 'SCREENSHOT SUBMISSIONS',
@@ -270,6 +274,10 @@ export const translations = {
     adminDashboard: 'Адмін-панель',
     restrictedAccess: 'Обмежений доступ',
     admin: 'АДМІН',
+
+    // Skins
+    navSkins: 'Скіни',
+    skinsStore: 'МАГАЗИН СКІНІВ',
 
     // Admin
     adminTitle: 'АДМІН-ПАНЕЛЬ',

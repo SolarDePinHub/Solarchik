@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import type { Translations } from '../lib/i18n';
 
-type Tab = 'clicker' | 'shop' | 'leaderboard' | 'boost' | 'referral' | 'care';
+type Tab = 'clicker' | 'shop' | 'leaderboard' | 'boost' | 'referral' | 'care' | 'skins';
 
 interface BottomNavProps {
   active: Tab;
@@ -14,6 +14,7 @@ export default function BottomNav({ active, onTabChange, hidden, t }: BottomNavP
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'leaderboard', label: t.navTop,   icon: '🏆' },
     { id: 'shop',        label: t.navShop,  icon: '🛒' },
+    { id: 'skins',       label: t.navSkins, icon: '🎨' },
     { id: 'clicker',     label: t.navHome,  icon: '🏠' },
     { id: 'boost',       label: t.navBoost, icon: '⚡' },
     { id: 'care',        label: t.navCare,  icon: '🐾' },

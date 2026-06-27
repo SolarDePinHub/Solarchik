@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ClickerTab from './components/ClickerTab';
 import ShopTab, { type Upgrade } from './components/ShopTab';
+import SkinsTab from './components/SkinsTab';
 import LeaderboardTab from './components/LeaderboardTab';
 import BinanceBoostTab from './components/BinanceBoostTab';
 import BottomNav from './components/BottomNav';
@@ -31,10 +32,11 @@ import {
   translations,
   type Lang,
 } from './lib/i18n';
+import { getSkinById, isChallengeUnlocked } from './lib/skins';
 
 const ADMIN_TG_ID = '574814684';
 
-type Tab = 'clicker' | 'shop' | 'leaderboard' | 'boost' | 'referral' | 'care';
+type Tab = 'clicker' | 'shop' | 'leaderboard' | 'boost' | 'referral' | 'care' | 'skins';
 
 const STORAGE_KEY = 'solarchik_state';
 const PLAYER_ID_KEY = 'solarchik_player_id';
@@ -187,6 +189,8 @@ export default function App() {
   // confirming the UI reflects what was actually persisted.
   const [syncVersion, setSyncVersion] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [ownedSkins, setOwnedSkins] = useState<string[]>([]);
+  const [equippedSkinId, setEquippedSkinId] = useState<string>('default');
   useEffect(() => { isSyncingRef.current = isSyncing; }, [isSyncing]);
 
   const seenMilestonesRef = useRef<Set<string>>(
@@ -206,6 +210,10 @@ export default function App() {
   const currentLevel = gameState.level;
   const energyCap = computeEnergyCapForLevel(gameState.level);
   const t = translations[lang];
+
+  const skinBoostMultiplier = 1 + (getSkinById(equippedSkinId).boostPercent / 100);
+  const skinBoostMultiplierRef = useRef(skinBoostMultiplier);
+  useEffect(() => { skinBoostMultiplierRef.current = skinBoostMultiplier; }, [skinBoostMultiplier]);
 
   const handleLangSwitch = useCallback(() => {
     setLang((l) => {
@@ -411,6 +419,9 @@ export default function App() {
           setCurrentEnergy(safeNum(restoredState.energy, 0));
           setDisplayTapProgress(safeNum(restoredState.tapProgress, 0));
           setCurrentPlayer(data);
+          // Load skin data
+          if (Array.isArray(data.owned_skins)) setOwnedSkins(data.owned_skins as string[]);
+          if (data.equipped_skin) setEquippedSkinId(data.equipped_skin as string);
           localStorage.setItem(PLAYER_ID_KEY, data.id);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(restoredState));
           initializedRef.current = true;
@@ -497,7 +508,7 @@ export default function App() {
     const id = setInterval(() => {
       setGameState((s) => {
         if (s.batteryLevel <= 0) return s;
-        const gained = s.passiveIncome;
+        const gained = Math.ceil(s.passiveIncome * skinBoostMultiplierRef.current);
         const newEnergy = s.energy + gained;
         return {
           ...s,
@@ -509,7 +520,7 @@ export default function App() {
       setCurrentEnergy((prev) => {
         const s = gameStateRef.current;
         if (s.batteryLevel <= 0) return prev;
-        return prev + s.passiveIncome;
+        return prev + Math.ceil(s.passiveIncome * skinBoostMultiplierRef.current);
       });
     }, 1000);
     return () => clearInterval(id);
@@ -560,7 +571,7 @@ export default function App() {
       return;
     }
 
-    const gained = safeNum(s.multiplier, 1);
+    const gained = Math.ceil(safeNum(s.multiplier, 1) * skinBoostMultiplierRef.current);
     const cap = computeEnergyCapForLevel(s.level);
     const newTapProgress = s.tapProgress + gained;
     const wrappedProgress = newTapProgress >= cap ? newTapProgress - cap : newTapProgress;
@@ -707,6 +718,57 @@ export default function App() {
       }
     }, 0);
   }, []);
+
+  const handleSkinPurchase = useCallback((skinId: string, price: number) => {
+    const playerId = localStorage.getItem(PLAYER_ID_KEY);
+    if (!playerId) return;
+
+    setCurrentEnergy((prev) => Math.max(0, prev - price));
+    setGameState((s) => ({
+      ...s,
+      energy: Math.max(0, s.energy - price),
+    }));
+
+    const newOwned = [...ownedSkins, skinId];
+    setOwnedSkins(newOwned);
+    setEquippedSkinId(skinId);
+
+    supabase.from('players').update({
+      energy: Math.max(0, gameStateRef.current.energy),
+      owned_skins: newOwned,
+      equipped_skin: skinId,
+      updated_at: new Date().toISOString(),
+    }).eq('id', playerId).then(({ error }) => {
+      if (error) console.error('[handleSkinPurchase] failed:', error.message);
+    });
+  }, [ownedSkins]);
+
+  const handleSkinEquip = useCallback((skinId: string) => {
+    const playerId = localStorage.getItem(PLAYER_ID_KEY);
+    setEquippedSkinId(skinId);
+    if (!playerId) return;
+    supabase.from('players').update({
+      equipped_skin: skinId,
+      updated_at: new Date().toISOString(),
+    }).eq('id', playerId).then(({ error }) => {
+      if (error) console.error('[handleSkinEquip] failed:', error.message);
+    });
+  }, []);
+
+  const handleSkinUnlockChallenge = useCallback((skinId: string) => {
+    const playerId = localStorage.getItem(PLAYER_ID_KEY);
+    const newOwned = [...ownedSkins, skinId];
+    setOwnedSkins(newOwned);
+    setEquippedSkinId(skinId);
+    if (!playerId) return;
+    supabase.from('players').update({
+      owned_skins: newOwned,
+      equipped_skin: skinId,
+      updated_at: new Date().toISOString(),
+    }).eq('id', playerId).then(({ error }) => {
+      if (error) console.error('[handleSkinUnlockChallenge] failed:', error.message);
+    });
+  }, [ownedSkins]);
 
   const handlePurchase = useCallback((upgradeId: string) => {
     const s = gameStateRef.current;
@@ -1041,6 +1103,7 @@ export default function App() {
               onReset={handleReset}
               isSyncing={isSyncing}
               onLongPress={handleLongPress}
+              equippedSkinId={equippedSkinId}
               t={t}
             />
           </motion.div>
@@ -1118,6 +1181,24 @@ export default function App() {
               peakEnergy={gameState.peakEnergy}
               onBack={() => setActiveTab('clicker')}
               t={t}
+            />
+          </motion.div>
+        );
+      case 'skins':
+        return (
+          <motion.div key="skins" className="flex flex-col flex-1"
+            variants={pageVariants} initial="initial" animate="in" exit="out" transition={pageTransition}>
+            <SkinsTab
+              energy={currentEnergy}
+              ownedSkins={ownedSkins}
+              equippedSkinId={equippedSkinId}
+              totalEnergyEarned={gameState.totalEnergyEarned}
+              level={gameState.level}
+              lang={lang}
+              onPurchase={handleSkinPurchase}
+              onEquip={handleSkinEquip}
+              onUnlockChallenge={handleSkinUnlockChallenge}
+              onBack={() => setActiveTab('clicker')}
             />
           </motion.div>
         );
