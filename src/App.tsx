@@ -633,23 +633,28 @@ export default function App() {
     const reward = DAILY_REWARDS[nextClaimIdx];
 
     // Compute synchronously from committed state — no cap on wallet energy.
-    const finalEnergy = s.energy + reward;
+    const finalTotalEarned = s.totalEnergyEarned + reward;
 
     setGameState((prev) => ({
       ...prev,
       energy: prev.energy + reward,
-      peakEnergy: Math.max(prev.peakEnergy, prev.energy + reward),
+      peakEnergy: Math.max(prev.peakEnergy ?? 0, prev.energy + reward),
+      totalEnergyEarned: prev.totalEnergyEarned + reward,
       dailyStreak: newStreak,
       lastDailyClaimDate: today,
     }));
-    setCurrentEnergy(finalEnergy);
+    // Use functional update so reward is always added on top of the current
+    // display value — not on top of a potentially stale gameState.energy.
+    setCurrentEnergy((prev) => prev + reward);
 
     setIsSyncing(true);
     setTimeout(() => {
       const playerId = localStorage.getItem(PLAYER_ID_KEY);
       if (playerId) {
+        const snapshotEnergy = gameStateRef.current.energy + reward;
         supabase.from('players').update({
-          energy: finalEnergy,
+          energy: snapshotEnergy,
+          total_energy_earned: finalTotalEarned,
           daily_streak: newStreak,
           last_daily_claim: today,
           updated_at: new Date().toISOString(),
@@ -661,7 +666,8 @@ export default function App() {
             }
             const { data } = await supabase
               .from('players').select('energy').eq('id', playerId).single();
-            if (data) setCurrentEnergy(safeNum(data.energy, finalEnergy));
+            // Only advance energy — never roll back the optimistic update
+            if (data) setCurrentEnergy((prev) => Math.max(prev, safeNum(data.energy, snapshotEnergy)));
           })
           .catch((err) => console.error('[handleDailyClaim] unexpected error:', err))
           .finally(() => setIsSyncing(false));
@@ -731,8 +737,12 @@ export default function App() {
     }
 
     const s = gameStateRef.current;
+    // Use the displayed energy as the base to avoid rolling back the display
+    // if currentEnergy diverged above gameState.energy (e.g. after a sync readback).
+    // We capture it here synchronously; the functional setCurrentEnergy below
+    // will use the latest value at apply time.
     const optimisticEnergy = s.energy + amount;
-    const optimisticPeak = Math.max(s.peakEnergy, optimisticEnergy);
+    const optimisticPeak = Math.max(s.peakEnergy ?? 0, optimisticEnergy);
     const optimisticTotalEarned = s.totalEnergyEarned + amount;
 
     console.log('[handleClaimBonus] START',
@@ -746,11 +756,12 @@ export default function App() {
     // Optimistic local update — bonus goes to wallet (energy) only, no tapProgress.
     setGameState((prev) => ({
       ...prev,
-      energy: optimisticEnergy,
-      peakEnergy: optimisticPeak,
-      totalEnergyEarned: optimisticTotalEarned,
+      energy: prev.energy + amount,
+      peakEnergy: Math.max(prev.peakEnergy ?? 0, prev.energy + amount),
+      totalEnergyEarned: prev.totalEnergyEarned + amount,
     }));
-    setCurrentEnergy(optimisticEnergy);
+    // Functional update so bonus is added on top of the current display value
+    setCurrentEnergy((prev) => prev + amount);
     setIsSyncing(true);
 
     try {
@@ -867,12 +878,13 @@ export default function App() {
     const dbPeak = safeNum(newData.peak_energy, optimisticPeak);
     const dbTotal = safeNum(newData.total_energy_earned, optimisticTotalEarned);
 
-    setCurrentEnergy(dbEnergy);
+    // Only advance energy — never roll back the optimistic update
+    setCurrentEnergy((prev) => Math.max(prev, dbEnergy));
     setGameState((prev) => ({
       ...prev,
-      energy: dbEnergy,
-      peakEnergy: dbPeak,
-      totalEnergyEarned: dbTotal,
+      energy: Math.max(prev.energy, dbEnergy),
+      peakEnergy: Math.max(prev.peakEnergy, dbPeak),
+      totalEnergyEarned: Math.max(prev.totalEnergyEarned, dbTotal),
     }));
     } catch (err) {
       console.error('[handleClaimBonus] unexpected error:', err);
