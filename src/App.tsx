@@ -155,6 +155,19 @@ function getTelegramId(): string | null {
   } catch { return null; }
 }
 
+function getTelegramName(): string | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const user = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
+    if (!user) return null;
+    if (user.first_name) {
+      return user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
+    }
+    if (user.username) return `@${user.username}`;
+    return null;
+  } catch { return null; }
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('clicker');
   const [configOverrides, setConfigOverrides] = useState<ConfigOverrides | null>(null);
@@ -365,6 +378,14 @@ export default function App() {
             level: data.player_level ?? 1,
           };
           prevLevelRef.current = restoredState.level;
+
+          // Keep name in sync with Telegram account on every login
+          const tgName = getTelegramName();
+          if (tgName && tgName !== data.name) {
+            supabase.from('players').update({ name: tgName }).eq('id', data.id).then(() => {});
+            data.name = tgName;
+          }
+
           setGameState(restoredState);
           setCurrentEnergy(safeNum(restoredState.energy, 0));
           setDisplayTapProgress(safeNum(restoredState.tapProgress, 0));
@@ -378,8 +399,9 @@ export default function App() {
 
       const local = gameStateRef.current;
       const cfgNow = resolveConfig(configOverrides);
+      const tgName = getTelegramName();
       const newPlayer: Record<string, unknown> = {
-        name: generatePlayerName(),
+        name: tgName ?? generatePlayerName(),
         energy: local.energy,
         avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)],
         is_you: true, upgrades: [], multiplier: 1, passive_income: 0,
