@@ -17,7 +17,7 @@ export default function LeaderboardTab({ currentPlayerId, onBack, onVote, t }: L
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPlayers = useCallback(async () => {
+  const fetchPlayers = useCallback(async (attempt = 0) => {
     setLoading(true);
     setError(null);
     try {
@@ -30,12 +30,21 @@ export default function LeaderboardTab({ currentPlayerId, onBack, onVote, t }: L
       if (fetchError) throw fetchError;
       setPlayers((data as Player[]) || []);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load leaderboard';
-      setError(msg);
+      // Handle both PostgrestError (has .message) and native Error
+      const msg = (err != null && typeof (err as Record<string, unknown>).message === 'string')
+        ? (err as Record<string, unknown>).message as string
+        : 'Failed to load leaderboard';
       console.error('[LeaderboardTab] fetch error:', err);
-    } finally {
-      setLoading(false);
+      // Auto-retry once after 2s on first failure (handles Telegram slow init)
+      if (attempt === 0) {
+        setTimeout(() => fetchPlayers(1), 2000);
+      } else {
+        setError(msg);
+        setLoading(false);
+      }
+      return;
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {

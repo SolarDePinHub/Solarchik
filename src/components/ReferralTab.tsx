@@ -27,11 +27,9 @@ export default function ReferralTab({
 }: ReferralTabProps) {
   const [copied, setCopied] = useState(false);
 
-  const botUsername = import.meta.env.VITE_BOT_USERNAME;
-  const isBotConfigured = botUsername && botUsername !== 'YOUR_BOT_USERNAME';
-  const referralLink = playerId && isBotConfigured
-    ? `https://t.me/${botUsername}?start=ref_${playerId}`
-    : null;
+  // Hardcode fallback so the link always works even if env var isn't in the build
+  const botUsername = import.meta.env.VITE_BOT_USERNAME || 'Solarchik_SolarDePin_bot';
+  const referralLink = playerId ? `https://t.me/${botUsername}?start=ref_${playerId}` : null;
 
   const tgWebApp = window.Telegram?.WebApp;
 
@@ -204,12 +202,6 @@ export default function ReferralTab({
                 </motion.button>
               </div>
             </>
-          ) : !isBotConfigured ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 text-center">
-              <p className="text-amber-700 font-pixel text-[8px] leading-relaxed">
-                Set VITE_BOT_USERNAME in .env to enable referral links
-              </p>
-            </div>
           ) : (
             <div className="bg-gray-100 rounded-xl px-3 py-3 text-center">
               <p className="text-gray-400 font-pixel text-[8px]">{t.loadingCode}</p>
