@@ -8,6 +8,7 @@ declare const window: Window & { Telegram?: any };
 
 interface ReferralTabProps {
   playerId: string | null;
+  referralCode: string | null;
   referralCount: number;
   bonusClaimed: boolean;
   isAdmin: boolean;
@@ -18,6 +19,7 @@ interface ReferralTabProps {
 
 export default function ReferralTab({
   playerId,
+  referralCode,
   referralCount,
   bonusClaimed,
   isAdmin,
@@ -27,9 +29,10 @@ export default function ReferralTab({
 }: ReferralTabProps) {
   const [copied, setCopied] = useState(false);
 
-  // Hardcode fallback so the link always works even if env var isn't in the build
+  // Use referral_code in link (DB trigger looks up by referral_code, not player id)
+  // ?startapp= opens the Mini App directly; ?start= only opens the bot chat
   const botUsername = import.meta.env.VITE_BOT_USERNAME || 'Solarchik_SolarDePin_bot';
-  const referralLink = playerId ? `https://t.me/${botUsername}?start=ref_${playerId}` : null;
+  const referralLink = referralCode ? `https://t.me/${botUsername}?startapp=ref_${referralCode}` : null;
 
   const tgWebApp = window.Telegram?.WebApp;
 

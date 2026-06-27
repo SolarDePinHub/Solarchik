@@ -347,9 +347,12 @@ export default function App() {
   useEffect(() => {
     async function initPlayer() {
       const params = new URLSearchParams(window.location.search);
-      const startParam = params.get('start');
-      const refCode = startParam?.startsWith('ref_')
-        ? startParam.slice(4)
+      // Telegram passes ?startapp= value via initDataUnsafe.start_param (not URL query string)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tgStartParam: string | null = (window as any).Telegram?.WebApp?.initDataUnsafe?.start_param ?? null;
+      const rawStart = tgStartParam ?? params.get('start') ?? params.get('tgWebAppStartParam');
+      const refCode = rawStart?.startsWith('ref_')
+        ? rawStart.slice(4)
         : params.get('ref');
       const telegramId = getTelegramId();
       const playerId = localStorage.getItem(PLAYER_ID_KEY);
@@ -1036,6 +1039,7 @@ export default function App() {
             variants={pageVariants} initial="initial" animate="in" exit="out" transition={pageTransition}>
             <ReferralTab
               playerId={currentPlayer?.id ?? null}
+              referralCode={currentPlayer?.referral_code ?? null}
               referralCount={currentPlayer?.referral_count ?? 0}
               bonusClaimed={bonusClaimed}
               isAdmin={isAdmin}
