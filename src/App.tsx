@@ -1206,28 +1206,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col w-full relative overflow-hidden"
-      data-sync={syncVersion}
-      style={{ background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : '#87ceeb' }}>
-
-      {/* Full-screen background image — lowest layer */}
-      {activeTab === 'clicker' && (
-        <img
-          src="/images/photo_2026-06-28_01-51-28.jpg"
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center top',
-            zIndex: -1,
-            pointerEvents: 'none',
-            imageRendering: 'auto',
-          }}
-        />
-      )}
+    <div
+      className={`min-h-dvh flex flex-col w-full relative overflow-hidden ${activeTab === 'clicker' ? 'game-bg' : 'sky-gradient'}`}
+      data-sync={syncVersion}>
 
       {activeTab !== 'clicker' && (
         <div
