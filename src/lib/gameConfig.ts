@@ -3,7 +3,7 @@ import type { Upgrade } from '../components/ShopTab';
 // ─── General defaults ─────────────────────────────────────────────────────────
 
 export const STARTING_ENERGY = 100;
-export const TAP_CAPACITY_MAX = 30;
+export const TAP_CAPACITY_MAX = 500;
 
 // ─── Leveling system ─────────────────────────────────────────────────────────
 
