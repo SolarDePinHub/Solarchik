@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check, Users, Gift, Link, Shield } from 'lucide-react';
+import { Copy, Check, Users, Gift, Link, Shield, Share2 } from 'lucide-react';
 import type { Translations } from '../lib/i18n';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const window: Window & { Telegram?: any };
 
 interface ReferralTabProps {
   playerId: string | null;
@@ -24,12 +27,46 @@ export default function ReferralTab({
 }: ReferralTabProps) {
   const [copied, setCopied] = useState(false);
 
-  const botUsername = import.meta.env.VITE_BOT_USERNAME ?? 'YOUR_BOT_USERNAME';
-  const referralLink = playerId ? `https://t.me/${botUsername}?start=ref_${playerId}` : null;
+  const botUsername = import.meta.env.VITE_BOT_USERNAME;
+  const isBotConfigured = botUsername && botUsername !== 'YOUR_BOT_USERNAME';
+  const referralLink = playerId && isBotConfigured
+    ? `https://t.me/${botUsername}?start=ref_${playerId}`
+    : null;
+
+  const tgWebApp = window.Telegram?.WebApp;
+
+  const handleShare = () => {
+    if (!referralLink) return;
+    const shareText = 'Грай у SOLARCHYK та збирай сонячну енергію разом зі мною!';
+    if (tgWebApp?.openTelegramLink) {
+      tgWebApp.openTelegramLink(
+        `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`
+      );
+    } else if (navigator.share) {
+      navigator.share({ title: 'SOLARCHYK', text: shareText, url: referralLink }).catch(() => {});
+    } else {
+      handleCopy();
+    }
+  };
 
   const handleCopy = async () => {
     if (!referralLink) return;
-    await navigator.clipboard.writeText(referralLink);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(referralLink);
+      } else {
+        // Fallback for Telegram WebApp where clipboard API may be restricted
+        const el = document.createElement('textarea');
+        el.value = referralLink;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+    } catch { /* silent — user will see the link anyway */ }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -135,30 +172,44 @@ export default function ReferralTab({
                 </p>
               </div>
 
-              <motion.button
-                onClick={handleCopy}
-                className={`w-full py-3 rounded-xl pixel-btn font-pixel text-[9px] tracking-wide flex items-center justify-center gap-2 transition-colors ${
-                  copied
-                    ? 'bg-emerald-400 text-emerald-900'
-                    : 'bg-sky-400 text-white'
-                }`}
-                whileTap={{ scale: 0.95 }}
-              >
-                <AnimatePresence mode="wait">
-                  {copied ? (
-                    <motion.span key="copied" className="flex items-center gap-2"
-                      initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
-                      <Check size={14} />{t.copied}
-                    </motion.span>
-                  ) : (
-                    <motion.span key="copy" className="flex items-center gap-2"
-                      initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
-                      <Copy size={14} />{t.copyLink}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={handleCopy}
+                  className={`flex-1 py-3 rounded-xl pixel-btn font-pixel text-[9px] tracking-wide flex items-center justify-center gap-2 transition-colors ${
+                    copied ? 'bg-emerald-400 text-emerald-900' : 'bg-sky-400 text-white'
+                  }`}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <AnimatePresence mode="wait">
+                    {copied ? (
+                      <motion.span key="copied" className="flex items-center gap-2"
+                        initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+                        <Check size={14} />{t.copied}
+                      </motion.span>
+                    ) : (
+                      <motion.span key="copy" className="flex items-center gap-2"
+                        initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+                        <Copy size={14} />{t.copyLink}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
+                <motion.button
+                  onClick={handleShare}
+                  className="px-4 py-3 rounded-xl pixel-btn bg-green-400 text-white flex items-center justify-center"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Share2 size={16} />
+                </motion.button>
+              </div>
             </>
+          ) : !isBotConfigured ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 text-center">
+              <p className="text-amber-700 font-pixel text-[8px] leading-relaxed">
+                Set VITE_BOT_USERNAME in .env to enable referral links
+              </p>
+            </div>
           ) : (
             <div className="bg-gray-100 rounded-xl px-3 py-3 text-center">
               <p className="text-gray-400 font-pixel text-[8px]">{t.loadingCode}</p>

@@ -23,14 +23,16 @@ export default function LeaderboardTab({ currentPlayerId, onBack, onVote, t }: L
     try {
       const { data, error: fetchError } = await supabase
         .from('players')
-        .select('*')
+        .select('id, name, avatar, energy, total_energy_earned, is_you')
         .order('total_energy_earned', { ascending: false })
         .limit(50);
 
       if (fetchError) throw fetchError;
-      setPlayers(data || []);
+      setPlayers((data as Player[]) || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
+      const msg = err instanceof Error ? err.message : 'Failed to load leaderboard';
+      setError(msg);
+      console.error('[LeaderboardTab] fetch error:', err);
     } finally {
       setLoading(false);
     }
