@@ -1206,31 +1206,36 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col w-full relative overflow-hidden" data-sync={syncVersion}
-      style={{
-        backgroundImage: activeTab === 'clicker' ? 'url(/images/photo_2026-06-28_01-51-28%20copy.jpg)' : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center top',
-        backgroundRepeat: 'no-repeat',
-        background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : undefined,
-      }}>
+    <div className="min-h-dvh flex flex-col w-full relative overflow-hidden"
+      data-sync={syncVersion}
+      style={{ background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : '#87ceeb' }}>
+
+      {/* Full-screen background image — lowest layer */}
       {activeTab === 'clicker' && (
-        <div
-          className="absolute inset-0 pointer-events-none"
+        <img
+          src="/images/photo_2026-06-28_01-51-28.jpg"
+          aria-hidden="true"
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.08) 40%, rgba(0,20,50,0.45) 75%, rgba(0,20,50,0.75) 100%)',
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center top',
+            zIndex: -1,
+            pointerEvents: 'none',
+            imageRendering: 'auto',
           }}
         />
       )}
+
       {activeTab !== 'clicker' && (
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(26,74,122,.0) 0%, rgba(7,24,48,.35) 100%)',
-            backgroundSize: '100% 100%',
-          }}
+          style={{ backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(26,74,122,.0) 0%, rgba(7,24,48,.35) 100%)' }}
         />
       )}
+
       <div className="flex flex-col flex-1 relative z-10">
         <AnimatePresence mode="wait">{renderTab()}</AnimatePresence>
       </div>
