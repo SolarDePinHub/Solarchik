@@ -1079,36 +1079,8 @@ export default function App() {
 
   // ─── Main app ─────────────────────────────────────────────────────────────
 
-  const renderTab = () => {
+  const renderSecondaryTab = () => {
     switch (activeTab) {
-      case 'clicker':
-        return (
-          <div key="clicker" className="flex flex-col flex-1"
-            style={{ transform: 'translateZ(0)', willChange: 'transform', opacity: 1 }}>
-            <ClickerTab
-              energy={currentEnergy}
-              tapProgress={displayTapProgress}
-              onTap={handleTap}
-              onNavChange={setActiveTab}
-              multiplier={gameState.multiplier}
-              passiveIncome={gameState.passiveIncome}
-              tapCapacity={gameState.tapCapacity}
-              upgradeTier={evolveTier}
-              batteryLevel={gameState.batteryLevel}
-              level={currentLevel}
-              energyCap={energyCap}
-              levelProgress={levelProgress(gameState.energy, gameState.level)}
-              kWToNextLevel={kWToNextLevel(gameState.energy, gameState.level)}
-              lang={lang}
-              onLangSwitch={handleLangSwitch}
-              onReset={handleReset}
-              isSyncing={isSyncing}
-              onLongPress={handleLongPress}
-              equippedSkinId={equippedSkinId}
-              t={t}
-            />
-          </div>
-        );
       case 'shop':
         return (
           <motion.div key="shop" className="flex flex-col flex-1"
@@ -1203,30 +1175,67 @@ export default function App() {
             />
           </motion.div>
         );
+      default:
+        return null;
     }
   };
+
+  const isClicker = activeTab === 'clicker';
 
   return (
     <div className="min-h-dvh flex flex-col w-full relative overflow-hidden"
       data-sync={syncVersion}
-      style={{ background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : '#1a0533' }}>
+      style={{ background: isClicker ? '#1a0533' : 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' }}>
 
-      {/* Scene background — always mounted, visible only on clicker tab */}
-      <div style={{ display: activeTab === 'clicker' ? 'block' : 'none' }}>
+      {/* Scene background — always mounted, hidden when not on clicker */}
+      <div style={{ display: isClicker ? 'block' : 'none' }}>
         <SceneBackground />
       </div>
 
-      {activeTab !== 'clicker' && (
+      {!isClicker && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(26,74,122,.0) 0%, rgba(7,24,48,.35) 100%)' }}
         />
       )}
 
-      <div className="flex flex-col flex-1 relative z-10">
-        <AnimatePresence mode="sync">{renderTab()}</AnimatePresence>
+      {/* ── ClickerTab: always mounted, shown/hidden via CSS ── */}
+      <div
+        className="flex flex-col flex-1 relative z-10"
+        style={{ display: isClicker ? 'flex' : 'none', transform: 'translateZ(0)', willChange: 'transform' }}
+      >
+        <ClickerTab
+          energy={currentEnergy}
+          tapProgress={displayTapProgress}
+          onTap={handleTap}
+          onNavChange={setActiveTab}
+          multiplier={gameState.multiplier}
+          passiveIncome={gameState.passiveIncome}
+          tapCapacity={gameState.tapCapacity}
+          upgradeTier={evolveTier}
+          batteryLevel={gameState.batteryLevel}
+          level={currentLevel}
+          energyCap={energyCap}
+          levelProgress={levelProgress(gameState.energy, gameState.level)}
+          kWToNextLevel={kWToNextLevel(gameState.energy, gameState.level)}
+          lang={lang}
+          onLangSwitch={handleLangSwitch}
+          onReset={handleReset}
+          isSyncing={isSyncing}
+          onLongPress={handleLongPress}
+          equippedSkinId={equippedSkinId}
+          t={t}
+        />
       </div>
-      <BottomNav active={activeTab} onTabChange={setActiveTab} t={t} hidden={activeTab === 'clicker'} />
+
+      {/* ── Secondary tabs: mount/unmount on demand ── */}
+      {!isClicker && (
+        <div className="flex flex-col flex-1 relative z-10">
+          <AnimatePresence mode="wait">{renderSecondaryTab()}</AnimatePresence>
+        </div>
+      )}
+
+      <BottomNav active={activeTab} onTabChange={setActiveTab} t={t} hidden={isClicker} />
       <MilestoneToast milestone={activeMilestone} onDismiss={() => setActiveMilestone(null)} />
       <LevelUpToast level={levelUpNotif} t={t} onDismiss={() => {
         // Advance the ref to the dismissed level so the detection effect
