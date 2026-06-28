@@ -135,8 +135,6 @@ function computeEvolveTier(peakEnergy: number, upgrades: Upgrade[]): 0 | 1 | 2 |
 
 const pageVariants = { initial: { opacity: 0, x: 40 }, in: { opacity: 1, x: 0 }, out: { opacity: 0, x: -40 } };
 const pageTransition = { type: 'spring' as const, stiffness: 280, damping: 28 };
-const clickerVariants = { initial: { opacity: 1, x: 0 }, in: { opacity: 1, x: 0 }, out: { opacity: 0, x: -40 } };
-const clickerTransition = { duration: 0 };
 
 /** Returns `fallback` if `v` is NaN, Infinity, null, or undefined. */
 function safeNum(v: unknown, fallback: number): number {
@@ -1085,8 +1083,8 @@ export default function App() {
     switch (activeTab) {
       case 'clicker':
         return (
-          <motion.div key="clicker" className="flex flex-col flex-1"
-            variants={clickerVariants} initial="initial" animate="in" exit="out" transition={clickerTransition}>
+          <div key="clicker" className="flex flex-col flex-1"
+            style={{ transform: 'translateZ(0)', willChange: 'transform', opacity: 1 }}>
             <ClickerTab
               energy={currentEnergy}
               tapProgress={displayTapProgress}
@@ -1109,7 +1107,7 @@ export default function App() {
               equippedSkinId={equippedSkinId}
               t={t}
             />
-          </motion.div>
+          </div>
         );
       case 'shop':
         return (
@@ -1213,8 +1211,10 @@ export default function App() {
       data-sync={syncVersion}
       style={{ background: activeTab !== 'clicker' ? 'radial-gradient(ellipse 80% 60% at 50% 30%, #1a4a7a 0%, #0d2a52 45%, #071830 100%)' : '#1a0533' }}>
 
-      {/* Illustrated scene background — lowest layer */}
-      {activeTab === 'clicker' && <SceneBackground />}
+      {/* Scene background — always mounted, visible only on clicker tab */}
+      <div style={{ display: activeTab === 'clicker' ? 'block' : 'none' }}>
+        <SceneBackground />
+      </div>
 
       {activeTab !== 'clicker' && (
         <div
@@ -1224,7 +1224,7 @@ export default function App() {
       )}
 
       <div className="flex flex-col flex-1 relative z-10">
-        <AnimatePresence mode="wait">{renderTab()}</AnimatePresence>
+        <AnimatePresence mode="sync">{renderTab()}</AnimatePresence>
       </div>
       <BottomNav active={activeTab} onTabChange={setActiveTab} t={t} hidden={activeTab === 'clicker'} />
       <MilestoneToast milestone={activeMilestone} onDismiss={() => setActiveMilestone(null)} />
