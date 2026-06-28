@@ -67,9 +67,9 @@ export default function LeaderboardTab({ currentPlayerId, onBack, onVote, t }: L
   };
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" style={{ maxHeight: '100dvh' }}>
       {/* Header */}
-      <div className="px-4 pt-4 pb-2">
+      <div className="flex-shrink-0 px-4 pt-4 pb-2">
         <div className="flex items-center gap-3 mb-3">
           <button
             onClick={onBack}
@@ -91,12 +91,19 @@ export default function LeaderboardTab({ currentPlayerId, onBack, onVote, t }: L
       </div>
 
       {/* Mascot hero */}
-      <div className="flex justify-center py-2">
+      <div className="flex-shrink-0 flex justify-center py-2">
         <RobotMascot size={130} />
       </div>
 
-      {/* Players list */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 mt-1">
+      {/* Players list — scrollable middle section */}
+      <div
+        className="leaderboard-list flex-1 overflow-y-auto px-4 space-y-2 mt-1 pb-2"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(56,189,248,.4) transparent',
+        }}
+      >
         {loading && players.length === 0 ? (
           <div className="text-center py-8">
             <motion.div
@@ -166,8 +173,8 @@ export default function LeaderboardTab({ currentPlayerId, onBack, onVote, t }: L
         )}
       </div>
 
-      {/* Vote bonus banner */}
-      <div className="px-4 pb-24">
+      {/* Vote bonus banner — pinned at bottom */}
+      <div className="flex-shrink-0 px-4 pb-6 pt-2">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

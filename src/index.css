@@ -197,6 +197,21 @@
   contain: layout style;
 }
 
+/* Leaderboard scrollbar styling */
+.leaderboard-list::-webkit-scrollbar {
+  width: 4px;
+}
+.leaderboard-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.leaderboard-list::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.4);
+  border-radius: 4px;
+}
+.leaderboard-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.7);
+}
+
 .tap-btn-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
