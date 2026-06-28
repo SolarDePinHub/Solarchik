@@ -99,6 +99,7 @@ export default function ClickerTab({
 
   const haptic = useCallback((pattern: number | number[]) => {
     try { navigator.vibrate?.(pattern); } catch { /* unsupported */ }
+    try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light'); } catch { /* unsupported */ }
   }, []);
 
   const setMoodFor = useCallback((m: RobotMood, ms: number) => {
