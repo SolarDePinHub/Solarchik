@@ -135,6 +135,8 @@ function computeEvolveTier(peakEnergy: number, upgrades: Upgrade[]): 0 | 1 | 2 |
 
 const pageVariants = { initial: { opacity: 0, x: 40 }, in: { opacity: 1, x: 0 }, out: { opacity: 0, x: -40 } };
 const pageTransition = { type: 'spring' as const, stiffness: 280, damping: 28 };
+const clickerVariants = { initial: { opacity: 1, x: 0 }, in: { opacity: 1, x: 0 }, out: { opacity: 0, x: -40 } };
+const clickerTransition = { duration: 0 };
 
 /** Returns `fallback` if `v` is NaN, Infinity, null, or undefined. */
 function safeNum(v: unknown, fallback: number): number {
@@ -1084,7 +1086,7 @@ export default function App() {
       case 'clicker':
         return (
           <motion.div key="clicker" className="flex flex-col flex-1"
-            variants={pageVariants} initial="initial" animate="in" exit="out" transition={pageTransition}>
+            variants={clickerVariants} initial="initial" animate="in" exit="out" transition={clickerTransition}>
             <ClickerTab
               energy={currentEnergy}
               tapProgress={displayTapProgress}

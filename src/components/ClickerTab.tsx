@@ -302,7 +302,7 @@ export default function ClickerTab({
         <motion.div
           className="absolute left-2 flex flex-col items-center gap-1.5"
           style={{ width: 48 }}
-          initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+          initial={{ opacity: 1, x: 0 }} animate={{ opacity: 1, x: 0 }}
         >
           <div className="w-full rounded-2xl px-1 py-2 flex flex-col items-center gap-0.5"
             style={{ background: 'rgba(14,28,56,.8)', border: '1px solid rgba(56,189,248,.22)', backdropFilter: 'blur(8px)', boxShadow: '0 0 10px rgba(251,191,36,.1)' }}>
@@ -410,7 +410,13 @@ export default function ClickerTab({
                   : { type: 'spring', stiffness: 600, damping: 15 }
               }
               className={`robot-float select-none ${canTap || wakeUpPending ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-              style={{ filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 18px rgba(56,189,248,.35))' : undefined, touchAction: 'none' }}
+              style={{
+                filter: (canTap && !batteryDead && mood !== 'charging') ? 'drop-shadow(0 0 18px rgba(56,189,248,.35))' : undefined,
+                touchAction: 'none',
+                willChange: 'transform, opacity',
+                opacity: 1,
+                visibility: 'visible',
+              }}
             >
               <RobotMascot size={230} tier={upgradeTier} mood={mood} skinId={equippedSkinId} />
             </motion.div>
@@ -454,7 +460,7 @@ export default function ClickerTab({
         <motion.div
           className="absolute right-2 flex flex-col items-center gap-1.5"
           style={{ width: 48 }}
-          initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
+          initial={{ opacity: 1, x: 0 }} animate={{ opacity: 1, x: 0 }}
         >
           <div className="w-full rounded-2xl px-1 py-2 flex flex-col items-center gap-0.5"
             style={{ background: 'rgba(14,28,56,.8)', border: '1px solid rgba(56,189,248,.22)', backdropFilter: 'blur(8px)', boxShadow: '0 0 10px rgba(52,211,153,.1)' }}>

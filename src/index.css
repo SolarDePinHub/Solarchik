@@ -193,6 +193,8 @@
 
 .robot-float {
   animation: breathe 4s ease-in-out infinite;
+  will-change: transform, opacity;
+  contain: layout style;
 }
 
 .tap-btn-glow {
