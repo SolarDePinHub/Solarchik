@@ -62,7 +62,6 @@ export default function ClickerTab({
   const [mood, setMood] = useState<RobotMood>('normal');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [wakeUpPending, setWakeUpPending] = useState(false);
-  const [showChargeHint, setShowChargeHint] = useState(false);
 
   const particleId = useRef(0);
   const tapBtnRef = useRef<HTMLButtonElement>(null);
@@ -80,13 +79,6 @@ export default function ClickerTab({
       setMood('sleepy');
     }
     localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()));
-  }, []);
-
-  // Show hint that long press is available (once, 2s after mount)
-  useEffect(() => {
-    const t = setTimeout(() => setShowChargeHint(true), 2000);
-    const t2 = setTimeout(() => setShowChargeHint(false), 6000);
-    return () => { clearTimeout(t); clearTimeout(t2); };
   }, []);
 
   const canTap = tapCapacity >= TAP_COST;
@@ -495,18 +487,6 @@ export default function ClickerTab({
           ))}
         </motion.div>
       </div>
-
-      {/* ── Long-press hint (first-time only) ── */}
-      <AnimatePresence>
-        {showChargeHint && !wakeUpPending && (
-          <motion.p
-            className="font-pixel text-[7px] text-yellow-300/60 text-center px-4 relative z-10 -mt-1"
-            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-          >
-            {lang === 'uk' ? '⚡ Затримай дотик для СУПЕРЗАРЯДУ' : '⚡ Hold to SUPER CHARGE'}
-          </motion.p>
-        )}
-      </AnimatePresence>
 
       {/* ── Neon TAP ENERGY bar ───────────────────────────────────────── */}
       <div className="w-full px-5 pb-2 relative z-10">
