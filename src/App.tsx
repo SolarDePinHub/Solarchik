@@ -34,6 +34,7 @@ import {
   type Lang,
 } from './lib/i18n';
 import { getSkinById, isChallengeUnlocked } from './lib/skins';
+import { triggerPopunder } from './lib/popunder';
 
 const ADMIN_TG_ID = '574814684';
 
@@ -635,10 +636,7 @@ export default function App() {
     feedClickCountRef.current += 1;
     localStorage.setItem('solarchik_feed_count', String(feedClickCountRef.current));
     if (feedClickCountRef.current % 3 === 0) {
-      const script = document.createElement('script');
-      script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
-      script.async = true;
-      document.body.appendChild(script);
+      triggerPopunder();
     }
 
     const cost = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, gameStateRef.current.level - 1));
@@ -676,10 +674,7 @@ export default function App() {
 
   const handleLightningBonus = useCallback(() => {
     const bonus = 10000;
-    const script = document.createElement('script');
-    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
-    script.async = true;
-    document.body.appendChild(script);
+    triggerPopunder();
     setGameState((prev) => ({
       ...prev,
       energy: prev.energy + bonus,
@@ -695,10 +690,7 @@ export default function App() {
     const s = gameStateRef.current;
     if (s.lastDailyClaimDate === today) return;
 
-    const script = document.createElement('script');
-    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
-    script.async = true;
-    document.body.appendChild(script);
+    triggerPopunder();
 
     const missedDay = s.lastDailyClaimDate !== null
       && s.lastDailyClaimDate !== yesterday;

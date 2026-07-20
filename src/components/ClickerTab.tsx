@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import RobotMascot, { type RobotMood } from './RobotMascot';
 import { TAP_CAPACITY_MAX, TAP_COST } from '../lib/gameConfig';
 import type { Lang, Translations } from '../lib/i18n';
+import { triggerPopunder } from '../lib/popunder';
 
 const LAST_ACTIVE_KEY = 'solarchik_last_active';
 const SLEEPY_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2 hours
@@ -231,10 +232,7 @@ export default function ClickerTab({
   const handleBoltClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const bonus = 10000;
-    const script = document.createElement('script');
-    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
-    script.async = true;
-    document.body.appendChild(script);
+    triggerPopunder();
     onLightningBonus(bonus);
     haptic([40, 30, 40]);
     const id = ++rewardId.current;
