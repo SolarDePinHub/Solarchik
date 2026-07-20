@@ -630,10 +630,8 @@ export default function App() {
   }, [cfg.tapCost]);
 
   const handleFeed = useCallback(() => {
-    const cost = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, gameStateRef.current.level - 1));
-    const s0 = gameStateRef.current;
-    if (s0.energy < cost || s0.batteryLevel >= 100) return;
-
+    // Count every physical click — the ad triggers on every 3rd press regardless
+    // of whether the feed actually succeeds (battery may already be full).
     feedClickCountRef.current += 1;
     localStorage.setItem('solarchik_feed_count', String(feedClickCountRef.current));
     if (feedClickCountRef.current % 3 === 0) {
@@ -642,6 +640,10 @@ export default function App() {
       script.async = true;
       document.body.appendChild(script);
     }
+
+    const cost = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, gameStateRef.current.level - 1));
+    const s0 = gameStateRef.current;
+    if (s0.energy < cost || s0.batteryLevel >= 100) return;
 
     setGameState((s) => {
       const c = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, s.level - 1));

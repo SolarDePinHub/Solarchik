@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import RobotMascot, { type RobotMood } from './RobotMascot';
 import { TAP_CAPACITY_MAX, TAP_COST } from '../lib/gameConfig';
@@ -203,11 +204,16 @@ export default function ClickerTab({
     stopCharge();
   }, [stopCharge]);
 
-  // ── Flying Lightning Bolt bonus: spawns every 2–3 min ──
+  // ── Flying Lightning Bolt bonus ──
+  // First bolt appears within seconds so players see it; later spawns are 2–3 min apart.
   useEffect(() => {
     let spawnTimer: ReturnType<typeof setTimeout>;
+    let firstSpawn = true;
     const scheduleNext = () => {
-      const delay = 120000 + Math.random() * 60000; // 2–3 min
+      const delay = firstSpawn
+        ? 8000 + Math.random() * 7000   // 8–15s for the first one
+        : 120000 + Math.random() * 60000; // 2–3 min thereafter
+      firstSpawn = false;
       spawnTimer = setTimeout(() => {
         setBolt({
           id: ++boltId.current,
@@ -604,58 +610,64 @@ export default function ClickerTab({
         ))}
       </AnimatePresence>
 
-      {/* ── Flying Lightning Bolt bonus ── */}
-      <AnimatePresence>
-        {bolt && (
-          <motion.button
-            key={`bolt-${bolt.id}`}
-            onClick={handleBoltClick}
-            initial={{ x: bolt.fromLeft ? -80 : window.innerWidth + 80, opacity: 0, scale: 0.6 }}
-            animate={{
-              x: bolt.fromLeft ? window.innerWidth + 80 : -80,
-              opacity: [0, 1, 1, 1, 0],
-              scale: [0.6, 1, 1.1, 1, 0.8],
-              y: [bolt.y, bolt.y - 30, bolt.y + 20, bolt.y - 10, bolt.y],
-            }}
-            exit={{ opacity: 0, scale: 0.4 }}
-            transition={{ duration: bolt.duration / 1000, ease: 'easeInOut' }}
-            onAnimationComplete={() => setBolt((b) => (b && b.id === bolt.id ? null : b))}
-            className="fixed z-[60] cursor-pointer"
-            style={{ top: 0, left: 0, touchAction: 'manipulation' }}
-            aria-label="Lightning bonus"
-          >
-            <motion.svg width="64" height="64" viewBox="0 0 24 24" fill="none"
-              animate={{ rotate: [0, -8, 8, 0], filter: [
-                'drop-shadow(0 0 6px #fde047) drop-shadow(0 0 14px #fbbf24)',
-                'drop-shadow(0 0 12px #fde047) drop-shadow(0 0 24px #f59e0b)',
-                'drop-shadow(0 0 6px #fde047) drop-shadow(0 0 14px #fbbf24)',
-              ] }}
-              transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ imageRendering: 'pixelated' }}
+      {/* ── Flying Lightning Bolt bonus (portaled to body so it's not clipped) ── */}
+      {createPortal(
+        <AnimatePresence>
+          {bolt && (
+            <motion.button
+              key={`bolt-${bolt.id}`}
+              onClick={handleBoltClick}
+              initial={{ x: bolt.fromLeft ? -80 : window.innerWidth + 80, opacity: 0, scale: 0.6 }}
+              animate={{
+                x: bolt.fromLeft ? window.innerWidth + 80 : -80,
+                opacity: [0, 1, 1, 1, 0],
+                scale: [0.6, 1, 1.1, 1, 0.8],
+                y: [bolt.y, bolt.y - 30, bolt.y + 20, bolt.y - 10, bolt.y],
+              }}
+              exit={{ opacity: 0, scale: 0.4 }}
+              transition={{ duration: bolt.duration / 1000, ease: 'easeInOut' }}
+              onAnimationComplete={() => setBolt((b) => (b && b.id === bolt.id ? null : b))}
+              className="fixed top-0 left-0 z-[60] cursor-pointer"
+              style={{ touchAction: 'manipulation' }}
+              aria-label="Lightning bonus"
             >
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-                fill="#fde047" stroke="#f59e0b" strokeWidth="1.5"
-                strokeLinejoin="miter" />
-            </motion.svg>
-          </motion.button>
-        )}
-      </AnimatePresence>
+              <motion.svg width="72" height="72" viewBox="0 0 24 24" fill="none"
+                animate={{ rotate: [0, -8, 8, 0], filter: [
+                  'drop-shadow(0 0 6px #fde047) drop-shadow(0 0 14px #fbbf24)',
+                  'drop-shadow(0 0 12px #fde047) drop-shadow(0 0 24px #f59e0b)',
+                  'drop-shadow(0 0 6px #fde047) drop-shadow(0 0 14px #fbbf24)',
+                ] }}
+                transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ imageRendering: 'pixelated' }}
+              >
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                  fill="#fde047" stroke="#f59e0b" strokeWidth="1.5"
+                  strokeLinejoin="miter" />
+              </motion.svg>
+            </motion.button>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
-      {/* Lightning bonus reward popup */}
-      <AnimatePresence>
-        {boltReward && (
-          <motion.div key={`bolt-reward-${boltReward.id}`}
-            className="fixed pointer-events-none z-[70] font-pixel text-lg font-bold text-yellow-300"
-            style={{ left: boltReward.x - 60, top: boltReward.y - 20, textShadow: '0 0 10px rgba(253,224,71,.9), 0 0 20px rgba(245,158,11,.6)' }}
-            initial={{ opacity: 1, y: 0, scale: 0.5 }}
-            animate={{ opacity: 0, y: -90, scale: 1.8 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-          >
-            +10,000 ⚡
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Lightning bonus reward popup (portaled to body) */}
+      {createPortal(
+        <AnimatePresence>
+          {boltReward && (
+            <motion.div key={`bolt-reward-${boltReward.id}`}
+              className="fixed pointer-events-none z-[70] font-pixel text-lg font-bold text-yellow-300"
+              style={{ left: boltReward.x - 60, top: boltReward.y - 20, textShadow: '0 0 10px rgba(253,224,71,.9), 0 0 20px rgba(245,158,11,.6)' }}
+              initial={{ opacity: 1, y: 0, scale: 0.5 }}
+              animate={{ opacity: 0, y: -90, scale: 1.8 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+            >
+              +10,000 ⚡
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
