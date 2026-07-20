@@ -1,44 +1,16 @@
-// EVADAV popunder trigger utility.
+// EVADAV direct-link trigger.
 //
-// The popunder script is loaded once globally in index.html <head>. Once loaded,
-// it attaches a click listener to the document and fires the popunder on real
-// user clicks (subject to frequency capping configured in the EVADAV dashboard).
-//
-// triggerPopunder() programmatically fires the popunder at specific moments
-// (3rd FEED click, daily reward claim, lightning bolt bonus) by calling the
-// script's global API if available, or falling back to a synthetic click event
-// on the document body that the script's listener catches.
+// Script-based popunders are blocked by mobile / Telegram WebApp popup
+// security. The reliable method on mobile is to open the EVADAV direct link
+// in a new tab via the native window.open() command — allowed because it
+// fires synchronously within a physical user click handler.
 
-type EvadavGlobal = { popunder?: () => void; trigger?: () => void; show?: () => void };
-
-function tryEvadavGlobal(): boolean {
-  const g = window as unknown as Record<string, unknown>;
-  const candidates: unknown[] = [
-    (g.Evadav as EvadavGlobal | undefined)?.popunder,
-    (g.Evadav as EvadavGlobal | undefined)?.trigger,
-    (g.Evadav as EvadavGlobal | undefined)?.show,
-    (g.evadav as EvadavGlobal | undefined)?.popunder,
-    g.popunder,
-    g.showPopunder,
-  ];
-  for (const fn of candidates) {
-    if (typeof fn === 'function') {
-      try {
-        fn.call(g);
-        return true;
-      } catch {
-        // keep trying
-      }
-    }
-  }
-  return false;
-}
+const EVADAV_DIRECT_LINK = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
 
 export function triggerPopunder(): void {
-  if (tryEvadavGlobal()) return;
   try {
-    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    window.open(EVADAV_DIRECT_LINK, '_blank', 'noopener,noreferrer');
   } catch {
-    // Script not loaded yet or click blocked — silently ignore.
+    // Silently ignore if the browser blocks the call.
   }
 }
