@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Check, Clock, XCircle, Send, Flame, Link2, Camera, X } from 'lucide-react';
 import RobotMascot from './RobotMascot';
+import NativeAdBanner from './NativeAdBanner';
 import { supabase } from '../lib/supabase';
 import { DAILY_REWARDS } from '../lib/gameConfig';
 import type { Translations } from '../lib/i18n';
@@ -470,6 +471,9 @@ export default function BinanceBoostTab({
             </div>
           )}
         </motion.div>
+
+        {/* Native ad banner */}
+        <NativeAdBanner className="min-h-[90px] w-full rounded-2xl overflow-hidden bg-white/70 border border-white/50" />
       </div>
 
       <AnimatePresence>
