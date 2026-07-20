@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import type { Translations } from '../lib/i18n';
-import NativeAdBanner from './NativeAdBanner';
 
 export interface Upgrade {
   id: string;
@@ -142,13 +141,8 @@ export default function ShopTab({ energy, upgrades, onPurchase, onBack, t }: Sho
         </motion.div>
       </div>
 
-      {/* Native ad banner */}
-      <div className="px-4 mt-1.5">
-        <NativeAdBanner className="h-[60px] w-full rounded-xl overflow-hidden bg-white/70 border border-white/50" />
-      </div>
-
       {/* Upgrades list */}
-      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-2 mt-1.5">
+      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-2 mt-2">
         {upgrades.map((upgrade, i) => (
           <UpgradeCard
             key={upgrade.id}
