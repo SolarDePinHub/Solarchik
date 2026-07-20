@@ -473,7 +473,7 @@ export default function BinanceBoostTab({
         </motion.div>
 
         {/* Native ad banner */}
-        <NativeAdBanner className="min-h-[90px] w-full rounded-2xl overflow-hidden bg-white/70 border border-white/50" />
+        <NativeAdBanner className="h-[60px] w-full rounded-xl overflow-hidden bg-white/70 border border-white/50" />
       </div>
 
       <AnimatePresence>
